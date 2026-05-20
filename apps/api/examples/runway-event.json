@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-05-20T14:20:30Z",
+  "projectId": "prj_week_zero",
+  "tool": {
+    "identifier": "runway-ml",
+    "url": "https://app.runwayml.com"
+  },
+  "model": {
+    "identifier": "gen-3-alpha"
+  },
+  "input": {
+    "promptText": "A locked-off shot of rain sliding down a neon storefront window at night.",
+    "parameters": {
+      "durationSeconds": 10,
+      "aspectRatio": "16:9"
+    },
+    "referenceAssets": []
+  },
+  "output": {
+    "assetUrl": "https://assets.example.com/week-zero/runway-0001.mp4",
+    "assetHash": {
+      "algorithm": "SHA-256",
+      "value": "b1c25a5e0b182f6c0ad84c35e8b5273f470e529bf7f1d3a3c2f9a6b7c8d9e0f1"
+    },
+    "assetType": "video",
+    "mimeType": "video/mp4",
+    "durationSeconds": 10
+  },
+  "operator": {
+    "userId": "user_local_001"
+  },
+  "provenance": {
+    "parentEventIds": []
+  }
+}
