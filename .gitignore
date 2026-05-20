@@ -9,3 +9,5 @@ build/
 .next/
 .turbo/
 coverage/
+__pycache__/
+*.pyc

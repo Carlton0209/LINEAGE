@@ -1,0 +1,34 @@
+[project]
+name = "lineage-api"
+version = "0.1.0"
+description = "FastAPI ledger backend for LINEAGE."
+requires-python = ">=3.11"
+dependencies = [
+  "alembic>=1.13.3",
+  "fastapi>=0.115.0",
+  "psycopg[binary]>=3.2.3",
+  "pydantic-settings>=2.6.0",
+  "sqlmodel>=0.0.22",
+  "uvicorn[standard]>=0.32.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx>=0.27.2",
+  "pytest>=8.3.3",
+  "ruff>=0.7.0"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["lineage_api"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
