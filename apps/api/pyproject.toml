@@ -5,6 +5,7 @@ description = "FastAPI ledger backend for LINEAGE."
 requires-python = ">=3.11"
 dependencies = [
   "alembic>=1.13.3",
+  "cryptography>=43.0.3",
   "fastapi>=0.115.0",
   "psycopg[binary]>=3.2.3",
   "pydantic-settings>=2.6.0",
@@ -18,6 +19,10 @@ dev = [
   "pytest>=8.3.3",
   "ruff>=0.7.0"
 ]
+
+[project.scripts]
+lineage-generate-signing-key = "lineage_api.cli.generate_signing_key:main"
+lineage-verify-manifest = "lineage_api.cli.verify_manifest:main"
 
 [build-system]
 requires = ["hatchling"]

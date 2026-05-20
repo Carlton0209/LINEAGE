@@ -7,8 +7,9 @@ from sqlmodel import Session, col, select
 
 from lineage_api.config import get_settings
 from lineage_api.database import get_session
+from lineage_api.manifest import build_unsigned_manifest, sign_manifest
 from lineage_api.models import AIEvent
-from lineage_api.schemas import EventCreate, EventListResponse, EventRead, ManifestPendingResponse
+from lineage_api.schemas import EventCreate, EventListResponse, EventRead
 
 app = FastAPI(title=get_settings().app_name, version="0.1.0")
 
@@ -64,12 +65,21 @@ def list_events(
     return EventListResponse(project_id=project_id, count=len(events), events=events)
 
 
-@app.post("/manifest/{project_id}", response_model=ManifestPendingResponse)
-def generate_manifest(project_id: str, session: SessionDep) -> ManifestPendingResponse:
+@app.post("/manifest/{project_id}")
+def generate_manifest(project_id: str, session: SessionDep) -> dict:
     events = session.exec(select(AIEvent).where(AIEvent.project_id == project_id)).all()
-    return ManifestPendingResponse(
-        project_id=project_id,
-        event_count=len(events),
-        status="pending_certification",
-        detail="Manifest signing and PDF generation are implemented in Step 3.",
-    )
+    if not events:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"no events found for project_id: {project_id}",
+        )
+
+    settings = get_settings()
+    try:
+        unsigned_manifest = build_unsigned_manifest(project_id, events, settings)
+        return sign_manifest(unsigned_manifest, settings)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
