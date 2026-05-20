@@ -1,0 +1,91 @@
+{
+  "@context": [
+    "https://lineage.dev/contexts/ai-bom/v0.1"
+  ],
+  "type": "LineageAIBillOfMaterials",
+  "schemaVersion": "0.1.0",
+  "manifestId": "urn:lineage:manifest:prj_week_zero_bad_timestamp",
+  "project": {
+    "id": "prj_week_zero",
+    "name": "Malformed Timestamp Invalid Example"
+  },
+  "generatedAt": "2026-05-20 14:25:00",
+  "issuer": {
+    "id": "lineage-local-dev",
+    "name": "LINEAGE Local Development Issuer"
+  },
+  "events": [
+    {
+      "eventId": "evt_invalid002",
+      "timestamp": "2026-05-20T14:20:30",
+      "projectId": "prj_week_zero",
+      "tool": {
+        "identifier": "runway-ml"
+      },
+      "model": {
+        "identifier": "gen-3-alpha"
+      },
+      "input": {
+        "promptText": "This timestamp is intentionally missing an explicit timezone.",
+        "referenceAssets": []
+      },
+      "output": {
+        "assetUrl": "https://assets.example.com/week-zero/bad-timestamp.mp4",
+        "assetHash": {
+          "algorithm": "SHA-256",
+          "value": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        },
+        "assetType": "video"
+      },
+      "operator": {
+        "userId": "user_local_001"
+      },
+      "provenance": {
+        "parentEventIds": []
+      }
+    }
+  ],
+  "c2pa": {
+    "specVersion": "2.1",
+    "manifestType": "standard",
+    "assertionStoreLabel": "c2pa.assertions",
+    "claimLabel": "c2pa.claim.v2",
+    "claimSignatureLabel": "c2pa.signature",
+    "claimGenerator": "LINEAGE/0.1.0",
+    "signatureAlgorithm": "EdDSA",
+    "signaturePayloadMode": "detached",
+    "actions": [
+      {
+        "action": "c2pa.created",
+        "when": "2026-05-20T14:20:30",
+        "softwareAgent": "Runway ML gen-3-alpha",
+        "lineageEventId": "evt_invalid002"
+      }
+    ]
+  },
+  "signature": {
+    "type": "LineageEd25519Signature2026",
+    "createdAt": "2026-05-20T14:25:00Z",
+    "algorithm": "Ed25519",
+    "encoding": "base64url",
+    "publicKey": {
+      "kid": "lineage-local-dev-key-001",
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+    },
+    "signedPayload": "canonical-json-without-signature",
+    "digest": {
+      "algorithm": "SHA-256",
+      "value": "3333333333333333333333333333333333333333333333333333333333333333"
+    },
+    "signatureValue": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "c2pa": {
+      "claimSignatureLabel": "c2pa.signature",
+      "coseSignatureStructure": "COSE_Sign1_Tagged",
+      "coseAlgorithm": "EdDSA",
+      "payloadMode": "detached",
+      "externalAAD": ""
+    }
+  }
+}

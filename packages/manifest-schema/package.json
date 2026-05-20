@@ -1,0 +1,23 @@
+{
+  "name": "@lineage/manifest-schema",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "JSON Schema and validation examples for the LINEAGE AI bill of materials manifest.",
+  "exports": {
+    ".": "./schema.json",
+    "./schema.json": "./schema.json"
+  },
+  "files": [
+    "schema.json",
+    "examples",
+    "scripts"
+  ],
+  "scripts": {
+    "validate": "node scripts/validate-examples.mjs"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  }
+}

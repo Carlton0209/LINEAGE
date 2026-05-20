@@ -1,0 +1,601 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lineage.dev/schemas/ai-bom-manifest.schema.json",
+  "title": "LINEAGE AI Bill of Materials Manifest",
+  "description": "Project-scoped AI media production provenance manifest. The structure is JSON-LD and is designed as a C2PA 2.1-compatible superset for external AI bill-of-materials delivery.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "@context",
+    "type",
+    "schemaVersion",
+    "manifestId",
+    "project",
+    "generatedAt",
+    "issuer",
+    "events",
+    "c2pa",
+    "signature"
+  ],
+  "properties": {
+    "@context": {
+      "description": "JSON-LD context. Implementations should include the LINEAGE context and may include C2PA or schema.org terms.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "anyOf": [
+          {
+            "type": "string",
+            "format": "uri"
+          },
+          {
+            "type": "object",
+            "additionalProperties": true
+          }
+        ]
+      }
+    },
+    "type": {
+      "const": "LineageAIBillOfMaterials"
+    },
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^0\\.1\\.0$"
+    },
+    "manifestId": {
+      "$ref": "#/$defs/manifestId"
+    },
+    "project": {
+      "$ref": "#/$defs/project"
+    },
+    "generatedAt": {
+      "$ref": "#/$defs/timestamp"
+    },
+    "issuer": {
+      "$ref": "#/$defs/issuer"
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/aiEvent"
+      }
+    },
+    "c2pa": {
+      "$ref": "#/$defs/c2paCompatibility"
+    },
+    "signature": {
+      "$ref": "#/$defs/signatureBlock"
+    }
+  },
+  "$defs": {
+    "manifestId": {
+      "type": "string",
+      "pattern": "^urn:lineage:manifest:[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$"
+    },
+    "eventId": {
+      "type": "string",
+      "pattern": "^evt_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$"
+    },
+    "projectId": {
+      "type": "string",
+      "pattern": "^prj_[A-Za-z0-9][A-Za-z0-9_-]{2,127}$"
+    },
+    "timestamp": {
+      "description": "ISO 8601 timestamp with explicit UTC or numeric timezone offset.",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,9})?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "sha256": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "properties": {
+        "algorithm": {
+          "const": "SHA-256"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        }
+      }
+    },
+    "uri": {
+      "type": "string",
+      "format": "uri"
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/projectId"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "externalIds": {
+          "description": "Optional delivery, production, or internal project identifiers.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "system",
+              "value"
+            ],
+            "properties": {
+              "system": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              }
+            }
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "issuer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "url": {
+          "$ref": "#/$defs/uri"
+        }
+      }
+    },
+    "aiEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "timestamp",
+        "projectId",
+        "tool",
+        "model",
+        "input",
+        "output",
+        "operator",
+        "provenance"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "#/$defs/eventId"
+        },
+        "timestamp": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "projectId": {
+          "$ref": "#/$defs/projectId"
+        },
+        "tool": {
+          "$ref": "#/$defs/tool"
+        },
+        "model": {
+          "$ref": "#/$defs/model"
+        },
+        "input": {
+          "$ref": "#/$defs/eventInput"
+        },
+        "output": {
+          "$ref": "#/$defs/eventOutput"
+        },
+        "operator": {
+          "$ref": "#/$defs/operator"
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        }
+      }
+    },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identifier"
+      ],
+      "properties": {
+        "identifier": {
+          "description": "Stable tool identifier, e.g. runway-ml.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{1,79}$"
+        },
+        "version": {
+          "description": "Tool web app or API version when detectable.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "url": {
+          "$ref": "#/$defs/uri"
+        }
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identifier"
+      ],
+      "properties": {
+        "identifier": {
+          "description": "Stable model identifier, e.g. gen-3-alpha.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      }
+    },
+    "eventInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "promptText",
+        "referenceAssets"
+      ],
+      "properties": {
+        "promptText": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20000
+        },
+        "negativePromptText": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "parameters": {
+          "description": "Tool-specific generation parameters such as duration, aspect ratio, seed, or style preset.",
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "referenceAssets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/referenceAsset"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "referenceAsset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assetHash",
+        "assetType"
+      ],
+      "properties": {
+        "assetUrl": {
+          "$ref": "#/$defs/uri"
+        },
+        "assetHash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "assetType": {
+          "$ref": "#/$defs/assetType"
+        },
+        "relationship": {
+          "description": "How the reference was used by the event.",
+          "type": "string",
+          "enum": [
+            "input",
+            "style-reference",
+            "image-to-video-source",
+            "audio-reference",
+            "mask",
+            "other"
+          ]
+        }
+      }
+    },
+    "eventOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assetUrl",
+        "assetHash",
+        "assetType"
+      ],
+      "properties": {
+        "assetUrl": {
+          "$ref": "#/$defs/uri"
+        },
+        "assetHash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "assetType": {
+          "$ref": "#/$defs/assetType"
+        },
+        "mimeType": {
+          "type": "string",
+          "pattern": "^[a-z0-9!#$&^_.+-]+/[a-z0-9!#$&^_.+-]+$"
+        },
+        "durationSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "assetType": {
+      "type": "string",
+      "enum": [
+        "image",
+        "video",
+        "audio",
+        "text"
+      ]
+    },
+    "operator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "userId"
+      ],
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "humanName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parentEventIds"
+      ],
+      "properties": {
+        "parentEventIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/eventId"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "c2paCompatibility": {
+      "description": "C2PA 2.1 alignment metadata. This manifest is an external JSON-LD delivery artifact, not a serialized JUMBF C2PA manifest store.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "specVersion",
+        "manifestType",
+        "assertionStoreLabel",
+        "claimLabel",
+        "claimSignatureLabel",
+        "claimGenerator",
+        "signatureAlgorithm",
+        "signaturePayloadMode",
+        "actions"
+      ],
+      "properties": {
+        "specVersion": {
+          "const": "2.1"
+        },
+        "manifestType": {
+          "enum": [
+            "standard",
+            "update"
+          ]
+        },
+        "assertionStoreLabel": {
+          "const": "c2pa.assertions"
+        },
+        "claimLabel": {
+          "const": "c2pa.claim.v2"
+        },
+        "claimSignatureLabel": {
+          "const": "c2pa.signature"
+        },
+        "claimGenerator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "signatureAlgorithm": {
+          "const": "EdDSA"
+        },
+        "signaturePayloadMode": {
+          "const": "detached"
+        },
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/c2paAction"
+          }
+        }
+      }
+    },
+    "c2paAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action",
+        "when",
+        "softwareAgent",
+        "lineageEventId"
+      ],
+      "properties": {
+        "action": {
+          "description": "C2PA action term corresponding to the AI generation event.",
+          "enum": [
+            "c2pa.created",
+            "c2pa.edited",
+            "c2pa.opened",
+            "c2pa.published"
+          ]
+        },
+        "when": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "softwareAgent": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "lineageEventId": {
+          "$ref": "#/$defs/eventId"
+        }
+      }
+    },
+    "signatureBlock": {
+      "description": "Ed25519 signature over the canonical JSON representation of this manifest with the signature property removed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "createdAt",
+        "algorithm",
+        "encoding",
+        "publicKey",
+        "signedPayload",
+        "digest",
+        "signatureValue",
+        "c2pa"
+      ],
+      "properties": {
+        "type": {
+          "const": "LineageEd25519Signature2026"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "algorithm": {
+          "const": "Ed25519"
+        },
+        "encoding": {
+          "const": "base64url"
+        },
+        "publicKey": {
+          "$ref": "#/$defs/ed25519PublicKeyJwk"
+        },
+        "signedPayload": {
+          "const": "canonical-json-without-signature"
+        },
+        "digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "signatureValue": {
+          "description": "Base64url-encoded raw Ed25519 signature bytes.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        },
+        "c2pa": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "claimSignatureLabel",
+            "coseSignatureStructure",
+            "coseAlgorithm",
+            "payloadMode",
+            "externalAAD"
+          ],
+          "properties": {
+            "claimSignatureLabel": {
+              "const": "c2pa.signature"
+            },
+            "coseSignatureStructure": {
+              "const": "COSE_Sign1_Tagged"
+            },
+            "coseAlgorithm": {
+              "const": "EdDSA"
+            },
+            "payloadMode": {
+              "const": "detached"
+            },
+            "externalAAD": {
+              "const": ""
+            }
+          }
+        }
+      }
+    },
+    "ed25519PublicKeyJwk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kty",
+        "crv",
+        "x"
+      ],
+      "properties": {
+        "kid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "kty": {
+          "const": "OKP"
+        },
+        "crv": {
+          "const": "Ed25519"
+        },
+        "x": {
+          "description": "Base64url-encoded Ed25519 public key material.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{43}$"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "@context": [
+    "https://lineage.dev/contexts/ai-bom/v0.1",
+    "https://schema.org",
+    {
+      "c2pa": "https://c2pa.org/specifications/specifications/2.1/specs/C2PA_Specification.html#"
+    }
+  ],
+  "type": "LineageAIBillOfMaterials",
+  "schemaVersion": "0.1.0",
+  "manifestId": "urn:lineage:manifest:prj_week_zero_multi_tool",
+  "project": {
+    "id": "prj_week_zero",
+    "name": "Week Zero Multi Tool Schema Exercise"
+  },
+  "generatedAt": "2026-05-20T20:00:00Z",
+  "issuer": {
+    "id": "lineage-local-dev",
+    "name": "LINEAGE Local Development Issuer"
+  },
+  "events": [
+    {
+      "eventId": "evt_runway0201",
+      "timestamp": "2026-05-20T19:20:10Z",
+      "projectId": "prj_week_zero",
+      "tool": {
+        "identifier": "runway-ml",
+        "url": "https://app.runwayml.com"
+      },
+      "model": {
+        "identifier": "gen-3-alpha"
+      },
+      "input": {
+        "promptText": "A practical tabletop product shot of a glass perfume bottle rotating on black velvet.",
+        "referenceAssets": []
+      },
+      "output": {
+        "assetUrl": "https://assets.example.com/week-zero/perfume-turntable.mp4",
+        "assetHash": {
+          "algorithm": "SHA-256",
+          "value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "assetType": "video",
+        "mimeType": "video/mp4",
+        "durationSeconds": 6
+      },
+      "operator": {
+        "userId": "user_local_001"
+      },
+      "provenance": {
+        "parentEventIds": []
+      }
+    },
+    {
+      "eventId": "evt_openai0202",
+      "timestamp": "2026-05-20T19:31:44Z",
+      "projectId": "prj_week_zero",
+      "tool": {
+        "identifier": "openai-sora",
+        "url": "https://sora.com"
+      },
+      "model": {
+        "identifier": "sora-2"
+      },
+      "input": {
+        "promptText": "Generate a matching macro insert of the perfume atomizer spraying a fine mist.",
+        "parameters": {
+          "durationSeconds": 4
+        },
+        "referenceAssets": [
+          {
+            "assetUrl": "https://assets.example.com/week-zero/perfume-turntable.mp4",
+            "assetHash": {
+              "algorithm": "SHA-256",
+              "value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+            },
+            "assetType": "video",
+            "relationship": "style-reference"
+          }
+        ]
+      },
+      "output": {
+        "assetUrl": "https://assets.example.com/week-zero/perfume-mist.mp4",
+        "assetHash": {
+          "algorithm": "SHA-256",
+          "value": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        },
+        "assetType": "video",
+        "mimeType": "video/mp4",
+        "durationSeconds": 4
+      },
+      "operator": {
+        "userId": "user_local_001"
+      },
+      "provenance": {
+        "parentEventIds": [
+          "evt_runway0201"
+        ]
+      }
+    }
+  ],
+  "c2pa": {
+    "specVersion": "2.1",
+    "manifestType": "standard",
+    "assertionStoreLabel": "c2pa.assertions",
+    "claimLabel": "c2pa.claim.v2",
+    "claimSignatureLabel": "c2pa.signature",
+    "claimGenerator": "LINEAGE/0.1.0",
+    "signatureAlgorithm": "EdDSA",
+    "signaturePayloadMode": "detached",
+    "actions": [
+      {
+        "action": "c2pa.created",
+        "when": "2026-05-20T19:20:10Z",
+        "softwareAgent": "Runway ML gen-3-alpha",
+        "lineageEventId": "evt_runway0201"
+      },
+      {
+        "action": "c2pa.edited",
+        "when": "2026-05-20T19:31:44Z",
+        "softwareAgent": "OpenAI Sora sora-2",
+        "lineageEventId": "evt_openai0202"
+      }
+    ]
+  },
+  "signature": {
+    "type": "LineageEd25519Signature2026",
+    "createdAt": "2026-05-20T20:00:00Z",
+    "algorithm": "Ed25519",
+    "encoding": "base64url",
+    "publicKey": {
+      "kid": "lineage-local-dev-key-001",
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+    },
+    "signedPayload": "canonical-json-without-signature",
+    "digest": {
+      "algorithm": "SHA-256",
+      "value": "2222222222222222222222222222222222222222222222222222222222222222"
+    },
+    "signatureValue": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "c2pa": {
+      "claimSignatureLabel": "c2pa.signature",
+      "coseSignatureStructure": "COSE_Sign1_Tagged",
+      "coseAlgorithm": "EdDSA",
+      "payloadMode": "detached",
+      "externalAAD": ""
+    }
+  }
+}
