@@ -8,6 +8,7 @@ dist/
 build/
 .next/
 .turbo/
+.vercel/
 coverage/
 __pycache__/
 *.pyc
