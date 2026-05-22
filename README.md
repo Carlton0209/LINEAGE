@@ -53,3 +53,11 @@ Generate the PDF summary:
 curl -X POST http://localhost:8000/manifest/prj_week_zero/pdf \
   -o lineage-prj_week_zero-manifest.pdf
 ```
+
+## Dashboard
+
+```sh
+pnpm dev:web
+```
+
+The dashboard runs at `http://localhost:3000` and reads the API at `LINEAGE_API_URL`, defaulting to `http://localhost:8000`.
