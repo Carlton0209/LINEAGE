@@ -15,6 +15,11 @@ const config: Config = {
         muted: "#8B949E",
         panel: "#161B22",
         border: "#30363D",
+        cream: "#EFEFEF",
+        "cream-soft": "#F5F5F5",
+        ink: "#111111",
+        "ink-muted": "#5C5C5C",
+        "ink-rule": "#E2E2E2",
         accent: "#E97451",
         accentMuted: "#3A211C",
         accentDeep: "#B85042"
