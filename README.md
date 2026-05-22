@@ -15,6 +15,13 @@ pnpm validate:schema
 
 The API skeleton lives in `apps/api`.
 
+Generate a local signing key before using `/manifest`:
+
+```sh
+uv run --project apps/api lineage-generate-signing-key
+export LINEAGE_ED25519_PRIVATE_KEY_B64URL=<generated-private-key>
+```
+
 ```sh
 docker compose up postgres api
 ```
@@ -31,4 +38,18 @@ Create an event:
 curl -X POST http://localhost:8000/events \
   -H 'Content-Type: application/json' \
   -d @apps/api/examples/runway-event.json
+```
+
+Generate and verify a signed manifest:
+
+```sh
+curl -X POST http://localhost:8000/manifest/prj_week_zero > manifest.json
+uv run --project apps/api lineage-verify-manifest manifest.json
+```
+
+Generate the PDF summary:
+
+```sh
+curl -X POST http://localhost:8000/manifest/prj_week_zero/pdf \
+  -o lineage-prj_week_zero-manifest.pdf
 ```

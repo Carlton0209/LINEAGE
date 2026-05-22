@@ -42,7 +42,7 @@ class EventInputPayload(BaseModel):
 
 class EventOutputPayload(BaseModel):
     assetUrl: str = Field(min_length=1, max_length=1000)
-    assetHash: HashDigest | None = None
+    assetHash: HashDigest
     assetType: AssetType
     mimeType: str | None = None
     durationSeconds: float | None = Field(default=None, gt=0)
@@ -77,7 +77,6 @@ class EventCreate(BaseModel):
 
     def to_model(self) -> AIEvent:
         event_id = self.eventId or f"evt_{uuid4().hex}"
-        output_hash = self.output.assetHash
         return AIEvent(
             event_id=event_id,
             project_id=self.projectId,
@@ -90,8 +89,8 @@ class EventCreate(BaseModel):
             prompt_text=self.input.promptText,
             negative_prompt_text=self.input.negativePromptText,
             output_asset_url=self.output.assetUrl,
-            output_asset_hash_algorithm=output_hash.algorithm if output_hash else None,
-            output_asset_hash_value=output_hash.value if output_hash else None,
+            output_asset_hash_algorithm=self.output.assetHash.algorithm,
+            output_asset_hash_value=self.output.assetHash.value,
             output_asset_type=self.output.assetType,
             output_mime_type=self.output.mimeType,
             output_duration_seconds=self.output.durationSeconds,
@@ -128,9 +127,3 @@ class EventListResponse(BaseModel):
     count: int
     events: list[EventRead]
 
-
-class ManifestPendingResponse(BaseModel):
-    project_id: str
-    event_count: int
-    status: Literal["pending_certification"]
-    detail: str
