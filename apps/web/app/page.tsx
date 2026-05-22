@@ -1,5 +1,6 @@
 import { Download, FileJson, FileText, RefreshCcw, Search } from "lucide-react";
 import type { ReactNode } from "react";
+import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -157,17 +158,11 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-5 py-6 lg:px-8">
-        <header className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-accent">LINEAGE</p>
-            <h1 className="mt-2 font-heading text-3xl font-semibold tracking-normal text-foreground">
-              AI Bill of Materials
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm text-muted">
-              Project-scoped ledger of AI-generated media events and certification exports.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
+        <SiteHeader
+          title="AI Bill of Materials"
+          subtitle="Project-scoped ledger of AI-generated media events and certification exports."
+          actions={
+            <>
             <DownloadLink href={downloadHref("json", projectId)} variant="secondary">
               <FileJson size={16} />
               JSON
@@ -176,8 +171,9 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               <FileText size={16} />
               PDF
             </DownloadLink>
-          </div>
-        </header>
+            </>
+          }
+        />
 
         <section className="border border-border bg-panel p-4 shadow-line">
           <form className="grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr_1fr_1fr_auto] lg:items-end">
