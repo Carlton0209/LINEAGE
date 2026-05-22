@@ -34,6 +34,18 @@ export type EventFetchResult =
   | { ok: true; data: EventListResponse }
   | { ok: false; error: string; data: EventListResponse };
 
+export type VerificationResult =
+  | {
+      valid: true;
+      manifestId: string;
+      projectId: string;
+      generatedAt: string;
+      eventCount: number;
+      publicKeyFingerprint: string;
+      digestAlgorithm: string;
+    }
+  | { valid: false; reason: string };
+
 export function apiBaseUrl() {
   return process.env.LINEAGE_API_URL ?? "http://localhost:8000";
 }
@@ -80,4 +92,22 @@ export function downloadParams(projectId: string) {
   const params = new URLSearchParams();
   params.set("project_id", projectId);
   return params.toString();
+}
+
+export async function verifyManifest(rawJson: string): Promise<VerificationResult> {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(rawJson);
+  } catch {
+    return { valid: false, reason: "Pasted text is not valid JSON." };
+  }
+
+  const response = await fetch("/api/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(parsed),
+    cache: "no-store"
+  });
+
+  return (await response.json()) as VerificationResult;
 }

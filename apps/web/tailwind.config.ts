@@ -16,7 +16,8 @@ const config: Config = {
         panel: "#161B22",
         border: "#30363D",
         accent: "#E97451",
-        accentMuted: "#3A211C"
+        accentMuted: "#3A211C",
+        accentDeep: "#B85042"
       },
       fontFamily: {
         body: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
