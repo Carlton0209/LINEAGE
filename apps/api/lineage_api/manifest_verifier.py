@@ -4,7 +4,7 @@ from typing import Any
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
-from lineage_api.crypto import b64url_decode, canonical_json_bytes, sha256_hex
+from lineage_api.crypto import b64url_decode, b64url_encode, canonical_json_bytes, sha256_hex
 
 
 def verify_signed_manifest(manifest: dict[str, Any]) -> None:
@@ -32,3 +32,35 @@ def verify_signed_manifest(manifest: dict[str, Any]) -> None:
 
     public_key = Ed25519PublicKey.from_public_bytes(b64url_decode(public_key_value))
     public_key.verify(b64url_decode(signature_value), canonical_payload)
+
+
+def public_key_fingerprint(public_key_b64url: str, key_id: str | None = None) -> str:
+    raw_public_key = b64url_decode(public_key_b64url)
+    digest = b64url_encode(bytes.fromhex(sha256_hex(raw_public_key)))[:16]
+    chunks = ":".join(digest[index : index + 4] for index in range(0, 16, 4))
+    prefix = (key_id or "key").split("-", maxsplit=1)[0] or "key"
+    return f"{prefix}:{chunks}"
+
+
+def verification_result(manifest: dict[str, Any]) -> dict[str, Any]:
+    try:
+        verify_signed_manifest(manifest)
+    except Exception as exc:
+        return {"valid": False, "reason": str(exc)}
+
+    signature = manifest["signature"]
+    public_key = signature["publicKey"]
+    project = manifest["project"]
+
+    return {
+        "valid": True,
+        "manifestId": manifest["manifestId"],
+        "projectId": project["id"],
+        "generatedAt": manifest["generatedAt"],
+        "eventCount": len(manifest["events"]),
+        "publicKeyFingerprint": public_key_fingerprint(
+            public_key["x"],
+            public_key.get("kid"),
+        ),
+        "digestAlgorithm": signature["digest"]["algorithm"],
+    }

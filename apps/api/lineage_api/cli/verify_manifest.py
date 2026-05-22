@@ -3,7 +3,7 @@ import json
 import sys
 from pathlib import Path
 
-from lineage_api.manifest_verifier import verify_signed_manifest
+from lineage_api.manifest_verifier import verification_result
 
 
 def main() -> None:
@@ -13,10 +13,14 @@ def main() -> None:
 
     try:
         manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
-        verify_signed_manifest(manifest)
+        result = verification_result(manifest)
     except Exception as exc:
         print(f"invalid: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
+
+    if not result["valid"]:
+        print(f"invalid: {result['reason']}", file=sys.stderr)
+        raise SystemExit(1)
 
     print("valid")
 
