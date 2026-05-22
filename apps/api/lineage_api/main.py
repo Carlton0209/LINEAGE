@@ -9,6 +9,7 @@ from sqlmodel import Session, col, select
 from lineage_api.config import get_settings
 from lineage_api.database import get_session
 from lineage_api.manifest import build_unsigned_manifest, sign_manifest
+from lineage_api.manifest_verifier import verification_result
 from lineage_api.models import AIEvent
 from lineage_api.pdf import generate_manifest_pdf
 from lineage_api.schemas import EventCreate, EventListResponse, EventRead
@@ -65,6 +66,11 @@ def list_events(
 
     events = session.exec(statement.order_by(col(AIEvent.occurred_at).desc())).all()
     return EventListResponse(project_id=project_id, count=len(events), events=events)
+
+
+@app.post("/manifest/verify")
+def verify_manifest(manifest: dict) -> dict:
+    return verification_result(manifest)
 
 
 def _signed_manifest_for_project(project_id: str, session: Session) -> dict:
