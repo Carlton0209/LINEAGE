@@ -4,6 +4,10 @@
   "version": "0.1.0",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
+    "build": "pnpm build:web",
+    "build:web": "pnpm --filter @lineage/web build",
+    "dev": "pnpm dev:web",
+    "dev:web": "pnpm --filter @lineage/web dev",
     "validate:schema": "node packages/manifest-schema/scripts/validate-examples.mjs"
   },
   "devDependencies": {
