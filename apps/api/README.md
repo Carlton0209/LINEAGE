@@ -39,3 +39,10 @@ Generate and verify a manifest:
 curl -X POST http://localhost:8000/manifest/prj_week_zero > manifest.json
 uv run lineage-verify-manifest manifest.json
 ```
+
+Generate a PDF summary:
+
+```sh
+curl -X POST http://localhost:8000/manifest/prj_week_zero/pdf \
+  -o lineage-prj_week_zero-manifest.pdf
+```

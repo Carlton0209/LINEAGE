@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Query, status
+from fastapi.responses import Response
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select
 
@@ -9,6 +10,7 @@ from lineage_api.config import get_settings
 from lineage_api.database import get_session
 from lineage_api.manifest import build_unsigned_manifest, sign_manifest
 from lineage_api.models import AIEvent
+from lineage_api.pdf import generate_manifest_pdf
 from lineage_api.schemas import EventCreate, EventListResponse, EventRead
 
 app = FastAPI(title=get_settings().app_name, version="0.1.0")
@@ -65,8 +67,7 @@ def list_events(
     return EventListResponse(project_id=project_id, count=len(events), events=events)
 
 
-@app.post("/manifest/{project_id}")
-def generate_manifest(project_id: str, session: SessionDep) -> dict:
+def _signed_manifest_for_project(project_id: str, session: Session) -> dict:
     events = session.exec(select(AIEvent).where(AIEvent.project_id == project_id)).all()
     if not events:
         raise HTTPException(
@@ -83,3 +84,20 @@ def generate_manifest(project_id: str, session: SessionDep) -> dict:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(exc),
         ) from exc
+
+
+@app.post("/manifest/{project_id}")
+def generate_manifest(project_id: str, session: SessionDep) -> dict:
+    return _signed_manifest_for_project(project_id, session)
+
+
+@app.post("/manifest/{project_id}/pdf")
+def generate_manifest_pdf_response(project_id: str, session: SessionDep) -> Response:
+    manifest = _signed_manifest_for_project(project_id, session)
+    pdf_bytes = generate_manifest_pdf(manifest)
+    filename = f"lineage-{project_id}-manifest.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

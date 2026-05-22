@@ -8,6 +8,7 @@ from lineage_api.crypto import raw_private_key_b64url
 from lineage_api.manifest import build_unsigned_manifest, sign_manifest
 from lineage_api.manifest_verifier import verify_signed_manifest
 from lineage_api.models import AIEvent
+from lineage_api.pdf import generate_manifest_pdf
 
 
 def make_settings() -> Settings:
@@ -67,3 +68,19 @@ def test_tampered_manifest_fails_verification() -> None:
 
     with pytest.raises(ValueError, match="digest"):
         verify_signed_manifest(signed_manifest)
+
+
+def test_manifest_pdf_generation_returns_pdf_bytes() -> None:
+    settings = make_settings()
+    unsigned_manifest = build_unsigned_manifest(
+        "prj_week_zero",
+        [make_event()],
+        settings,
+        generated_at=datetime(2026, 5, 20, 15, 0, 0, tzinfo=timezone.utc),
+    )
+    signed_manifest = sign_manifest(unsigned_manifest, settings)
+
+    pdf_bytes = generate_manifest_pdf(signed_manifest)
+
+    assert pdf_bytes.startswith(b"%PDF")
+    assert b"LINEAGE AI Bill of Materials" in pdf_bytes
