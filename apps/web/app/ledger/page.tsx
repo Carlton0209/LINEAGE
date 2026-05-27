@@ -212,7 +212,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               </Button>
               <a
                 className="inline-flex h-9 items-center justify-center rounded-md bg-transparent px-3 text-sm text-foreground hover:bg-[#1f2630]"
-                href="/"
+                href="/ledger"
               >
                 <RefreshCcw size={16} />
               </a>
