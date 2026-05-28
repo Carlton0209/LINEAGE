@@ -1,12 +1,18 @@
 "use client";
 
 import { ArrowRight } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 
 function BackgroundOrnament() {
   return <div className="background-ornament" />;
 }
+
+const GlassBackground = dynamic(() => import("@/components/lineage-glass-background"), {
+  ssr: false,
+  loading: () => <BackgroundOrnament />
+});
 
 function TextRoll({ label }: { label: string }) {
   return (
@@ -46,9 +52,9 @@ function TrustPill() {
   return (
     <div className="inline-flex items-center gap-2 rounded-[4px] bg-white px-3 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-shadow duration-300 hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] sm:gap-3 sm:px-4 sm:py-2.5">
       <StarburstIcon />
-      <span className="text-[13px] font-medium text-ink sm:text-[14px]">Built on C2PA 2.1</span>
+      <span className="text-[13px] font-medium text-ink sm:text-[14px]">JSON-LD + Ed25519</span>
       <span className="rounded bg-ink px-1.5 py-0.5 text-[10px] text-white sm:px-2 sm:text-[11px]">
-        Open spec
+        Signed
       </span>
     </div>
   );
@@ -115,23 +121,23 @@ function SectionHeadline({ children }: { children: React.ReactNode }) {
 function HeroSection() {
   return (
     <section className="relative z-10 mx-auto w-full max-w-[1440px] px-5 pb-20 pt-12 sm:px-8 sm:pb-28 sm:pt-16 lg:px-12 lg:pb-36 lg:pt-20">
-      <SectionEyebrow label="Compliance infrastructure for AI-assisted media" number="01" />
+      <SectionEyebrow label="AI bill of materials for media delivery" number="01" />
       <h1 className="text-[clamp(2.4rem,8vw,5.2rem)] font-medium leading-[1.04] tracking-[-0.03em] text-ink sm:text-[clamp(3rem,6vw,5.2rem)]">
-        Every film, show, ad,
+        Capture every AI touch.
         <br className="hidden sm:block" />
         <span className="sm:hidden"> </span>
-        and album now leaves
+        Turn production history
         <br className="hidden sm:block" />
         <span className="sm:hidden"> </span>
-        an AI footprint.<span className="text-accent"> Make yours defensible.</span>
+        into proof.<span className="text-accent"> Deliver with confidence.</span>
       </h1>
       <p className="mt-7 max-w-[720px] text-[16px] leading-[1.55] text-ink-muted sm:mt-9 sm:text-[18px]">
-        LINEAGE captures the prompts, models, consents, and licenses behind every AI-assisted
-        production and turns them into a verifiable record — one your buyers, insurers, and guilds
-        can independently check.
+        LINEAGE records the tools, models, prompts, source assets, output hashes, operators, and
+        provenance behind AI-assisted work, then packages that history into a signed manifest and a
+        buyer-readable delivery summary.
       </p>
       <div className="mt-10 flex flex-col gap-4 sm:mt-12 sm:flex-row sm:gap-5">
-        <PrimaryButton label="See how it works" targetId="product" />
+        <PrimaryButton label="See the pipeline" targetId="product" />
         <TrustPill />
       </div>
     </section>
@@ -141,41 +147,42 @@ function HeroSection() {
 function ProblemSection() {
   return (
     <SectionShell id="problem">
-      <SectionEyebrow label="The trigger" number="02" />
+      <SectionEyebrow label="Why this exists" number="02" />
       <SectionHeadline>
-        Streamers and networks are
+        AI usage is now part
         <br />
-        <span className="text-accent">rewriting delivery contracts.</span>
+        <span className="text-accent">of the delivery package.</span>
       </SectionHeadline>
       <div className="mt-10 grid grid-cols-1 items-start gap-8 sm:mt-14 lg:grid-cols-[1.3fr_1fr] lg:gap-12">
         <div>
           <p className="mb-5 text-[16px] font-medium leading-[1.55] text-ink sm:text-[18px]">
-            Every major streamer, broadcaster, and advertiser added AI-disclosure clauses to their
-            vendor agreements in 2025. The forms run 20 to 30 pages. No two buyers use the same
-            format.
+            A film, ad, trailer, or music video can now pass through Runway, Suno, ElevenLabs,
+            custom ComfyUI workflows, and internal model experiments before it reaches delivery.
+            The creative result may be finished; the provenance often is not.
           </p>
           <p className="mb-5 text-[16px] leading-[1.55] text-ink-muted sm:text-[18px]">
-            Vendors handle this in spreadsheets, email chains, and PDFs. Every delivery becomes a
-            scramble — confirm what AI was used, find the relevant licenses, get the talent
-            consents in order, and translate everything into the buyer&apos;s idiosyncratic schema.
+            Buyers, completion bond companies, and E&amp;O insurers need a clear answer to simple
+            questions: which AI systems touched the work, what prompts and references were used,
+            what assets were created, and whether the record changed after signing.
           </p>
           <p className="text-[16px] font-medium text-accent-dk sm:text-[18px]">
-            There is a name for that gap: the missing compliance layer. That is what we are
-            building.
+            LINEAGE turns that evidence into a structured, verifiable AI bill of materials instead
+            of another spreadsheet that has to be trusted by hand.
           </p>
         </div>
         <div className="rounded-2xl bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] sm:p-8">
           <p className="mb-5 text-[11px] font-medium uppercase tracking-[0.18em] text-ink-muted">
-            TODAY&apos;S REALITY
+            THE RECORD BUYERS NEED
           </p>
-          <p className="text-[64px] font-medium leading-none text-ink sm:text-[72px]">30+</p>
+          <p className="text-[64px] font-medium leading-none text-ink sm:text-[72px]">1</p>
           <p className="mt-3 text-[13px] leading-[1.5] text-ink-muted sm:text-[14px]">
-            pages of disclosure forms per delivery, varying by buyer
+            project-scoped ledger that connects prompts, models, assets, operators, and provenance
           </p>
           <div className="my-6 border-t border-ink-rule" />
-          <p className="text-[64px] font-medium leading-none text-accent sm:text-[72px]">0</p>
+          <p className="text-[64px] font-medium leading-none text-accent sm:text-[72px]">2</p>
           <p className="mt-3 text-[13px] leading-[1.5] text-ink-muted sm:text-[14px]">
-            tools that generate buyer-ready compliance packs in one click — until now
+            outputs from the same source of truth: a signed JSON-LD manifest and a readable PDF
+            summary
           </p>
         </div>
       </div>
@@ -187,26 +194,26 @@ const modules = [
   {
     number: "01 / MODULE",
     code: "CAPTURE",
-    subtitle: "Automatic tracking",
+    subtitle: "Evidence at creation time",
     body:
-      "Lightweight integrations inside the tools your creators already use — Premiere, Avid, Pro Tools, Runway, Suno, ElevenLabs, ComfyUI. The plugins run silently in the background.",
-    kicker: "Artists do nothing extra."
+      "The first capture surface watches Runway ML generation activity and records timestamp, tool, model, prompt, output URL, asset hash, operator, and project ID.",
+    kicker: "The proof starts where the asset is made."
   },
   {
     number: "02 / MODULE",
     code: "LEDGER",
-    subtitle: "Project audit trail",
+    subtitle: "Project-scoped event log",
     body:
-      "A web dashboard that aggregates AI usage per shot, per audio track, per image asset. Manages commercial licenses, training-data indemnity, and likeness consents — the three classes of evidence buyers ask for.",
-    kicker: "Two-way sync with ShotGrid and Frame.io."
+      "The backend normalizes every capture into a searchable ledger. Producers can filter by date, tool, and asset, then inspect the full chain before delivery.",
+    kicker: "One project, one source of truth."
   },
   {
     number: "03 / MODULE",
     code: "CERTIFY",
-    subtitle: "Buyer-ready output",
+    subtitle: "Signed delivery artifact",
     body:
-      "One click generates the manifest in any required format — SAG-AFTRA consent lists, WGA disclosure forms, Netflix and Disney AI manifests, EU AI Act labels. Cryptographically signed.",
-    kicker: "Independently verifiable by anyone, with or without LINEAGE."
+      "One click produces a JSON-LD manifest with C2PA-compatible structure, an Ed25519 signature, the public key fingerprint, and a PDF summary.",
+    kicker: "Anyone can verify the manifest without a LINEAGE account."
   }
 ];
 
@@ -220,8 +227,8 @@ function ProductSection() {
         <span className="text-accent">One unbroken chain.</span>
       </SectionHeadline>
       <p className="mt-5 max-w-[600px] text-[15px] text-ink-muted sm:text-[16px]">
-        From the first prompt typed in Runway to the moment a buyer accepts delivery, every AI
-        touch is recorded, signed, and verifiable.
+        The MVP proves one complete loop: capture a real generation, store it in a ledger, and
+        certify the project with a manifest that can be checked independently.
       </p>
       <div className="mt-12 grid grid-cols-1 gap-5 sm:mt-16 sm:gap-6 md:grid-cols-3">
         {modules.map((item) => (
@@ -251,33 +258,33 @@ function ProductSection() {
 const workflowSteps = [
   {
     number: "1",
-    title: "Create",
-    body: "Artists work in their usual tools — no new software, no extra steps."
+    title: "Generate",
+    body: "A creator produces an asset in Runway with the project ID set in the browser extension."
   },
   {
     number: "2",
     title: "Capture",
-    body: "Integrations record each AI touch automatically, including prompt, model, and parameters."
+    body: "The extension captures the actual prompt, model identifier, output URL, and timestamp."
   },
   {
     number: "3",
     title: "Log",
-    body: "Events accumulate into a project ledger, linked to asset hashes and talent consents."
+    body: "The service hashes the output asset and writes a normalized event into the project ledger."
   },
   {
     number: "4",
     title: "Review",
-    body: "The compliance lead inspects the ledger and adds evidence where it's needed."
+    body: "The dashboard shows the project history with filters by date, tool, and asset."
   },
   {
     number: "5",
     title: "Sign",
-    body: "A cryptographic signature is produced. The manifest becomes final and tamper-evident."
+    body: "LINEAGE generates a canonical manifest and signs it with an Ed25519 keypair."
   },
   {
     number: "6",
     title: "Deliver",
-    body: "The buyer verifies the chain on receipt — independently, in their own tools."
+    body: "The buyer receives JSON plus PDF, then verifies the signature on a public verifier page."
   }
 ];
 
@@ -311,8 +318,8 @@ function WorkflowSection() {
           CORE PRINCIPLE
         </p>
         <p className="text-[14px] text-ink sm:text-[15px]">
-          Zero friction for creators. Full visibility for compliance leads. Independent verification
-          for buyers.
+          Capture close to creation. Preserve the evidence. Let every recipient verify the same
+          record.
         </p>
       </div>
     </SectionShell>
@@ -327,7 +334,7 @@ function TrustSection() {
   ];
   const limits = [
     "Whether the issuer is who they claim to be. Confirm the public key fingerprint with the issuer through a second channel.",
-    "Whether the AI usage was permitted by relevant contracts. That is a human judgment."
+    "Whether the underlying AI usage is allowed by a contract, license, union rule, or buyer policy. LINEAGE preserves evidence; people still make clearance decisions."
   ];
 
   return (
@@ -375,8 +382,8 @@ function TrustSection() {
         </article>
       </div>
       <p className="mt-8 border-t border-ink-rule pt-6 text-[13px] italic text-ink-muted sm:text-[14px]">
-        LINEAGE never logs, stores, or transmits your manifests beyond the endpoint you configure.
-        The verifier at lineage.dev/verify is stateless and free for anyone.
+        Verification answers one narrow question: did this signed manifest change after the issuer
+        produced it? That narrow promise is what makes the record useful in delivery workflows.
       </p>
     </SectionShell>
   );
@@ -388,21 +395,21 @@ const footerCards = [
     eyebrow: "FOR BUYERS",
     title: "Verify a manifest",
     body:
-      "Paste any LINEAGE manifest, confirm the signature, and read the audit summary. No account, no upload, no logging."
+      "Paste a LINEAGE manifest, confirm the signature, and read the audit summary. No account required."
   },
   {
     href: "/ledger",
     eyebrow: "FOR PRODUCTIONS",
     title: "See the ledger",
     body:
-      "Open a project dashboard and explore an example AI bill of materials. Filter by tool, asset type, or date range."
+      "Open the demo project ledger and inspect the captured AI events behind a delivery package."
   },
   {
     href: "mailto:hello@lineage.dev",
-    eyebrow: "FOR EVERYONE ELSE",
-    title: "Talk to us",
+    eyebrow: "FOR PARTNERS",
+    title: "Map a delivery requirement",
     body:
-      "Working on a production, underwriting a policy, or building a buyer-side template? Get in touch. We respond to every message."
+      "Working on buyer-side AI disclosure, insurance review, or production compliance? Send the format you need to support."
   }
 ];
 
@@ -413,13 +420,13 @@ function GetStartedSection() {
         <div className="rounded-3xl bg-ink p-10 text-cream sm:p-16 lg:p-20">
           <SectionEyebrow dark label="Get started" number="06" />
           <h2 className="text-[clamp(2rem,5.5vw,3.6rem)] font-medium leading-[1.08] tracking-[-0.025em] text-cream">
-            Compliance that runs
+            A manifest your buyer
             <br />
-            <span className="text-accent">in the background.</span>
+            <span className="text-accent">can actually inspect.</span>
           </h2>
           <p className="mt-5 max-w-[640px] text-[16px] leading-[1.55] text-[#9BA1A8] sm:text-[18px]">
-            Whether you&apos;re producing for a major streamer, underwriting an E&O policy, or
-            verifying a delivered manifest — start here.
+            Use LINEAGE to turn AI production history into a signed, reviewable delivery artifact:
+            structured enough for systems, readable enough for humans.
           </p>
           <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-14 sm:gap-5 md:grid-cols-3">
             {footerCards.map((card) => (
@@ -474,8 +481,8 @@ function GetStartedSection() {
 export default function HomePage() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-cream text-ink">
-      <div className="pointer-events-none absolute inset-0 z-0 opacity-70">
-        <BackgroundOrnament />
+      <div className="pointer-events-none absolute inset-0 z-0 opacity-90">
+        <GlassBackground />
       </div>
       <SiteHeader />
       <HeroSection />
