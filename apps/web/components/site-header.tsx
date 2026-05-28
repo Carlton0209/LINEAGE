@@ -4,6 +4,7 @@ import { ArrowRight, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
+import { BrandMark } from "@/components/brand-mark";
 import { cn } from "@/lib/utils";
 
 type SiteHeaderProps = {
@@ -59,10 +60,10 @@ export function SiteHeader({ title, subtitle, actions = null }: SiteHeaderProps)
           <div className="flex items-center gap-4 sm:gap-6">
             <Link
               aria-label="LINEAGE home"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-ink sm:h-10 sm:w-10"
+              className="inline-flex"
               href="/"
             >
-              <span className="h-2.5 w-2.5 rounded-full bg-accent" />
+              <BrandMark />
             </Link>
             <Link
               className="hidden text-[13px] font-semibold tracking-[0.04em] text-ink sm:inline"
@@ -132,7 +133,12 @@ export function SiteHeader({ title, subtitle, actions = null }: SiteHeaderProps)
           )}
         >
           <div className="mb-8 flex items-center justify-between">
-            <span className="text-[13px] font-semibold tracking-[0.04em] text-ink">LINEAGE</span>
+            <span className="inline-flex items-center gap-3">
+              <BrandMark size="sm" />
+              <span className="text-[13px] font-semibold tracking-[0.04em] text-ink">
+                LINEAGE
+              </span>
+            </span>
             <button
               aria-label="Close menu"
               className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-white"
