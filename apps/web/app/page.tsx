@@ -41,18 +41,6 @@ function PrimaryButton({ label, targetId }: { label: string; targetId: string })
   );
 }
 
-function TrustPill() {
-  return (
-    <div className="inline-flex items-center gap-2 rounded-[4px] bg-white px-3 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-shadow duration-300 hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] sm:gap-3 sm:px-4 sm:py-2.5">
-      <BrandMark size="sm" />
-      <span className="text-[13px] font-medium text-ink sm:text-[14px]">JSON-LD + Ed25519</span>
-      <span className="rounded bg-ink px-1.5 py-0.5 text-[10px] text-white sm:px-2 sm:text-[11px]">
-        Signed
-      </span>
-    </div>
-  );
-}
-
 function SectionEyebrow({
   number,
   label,
@@ -131,7 +119,6 @@ function HeroSection() {
       </p>
       <div className="mt-10 flex flex-col gap-4 sm:mt-12 sm:flex-row sm:gap-5">
         <PrimaryButton label="See the pipeline" targetId="product" />
-        <TrustPill />
       </div>
     </section>
   );
