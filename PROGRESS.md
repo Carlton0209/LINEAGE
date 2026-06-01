@@ -13,6 +13,21 @@ Last updated: 2026-06-08
 
 ## Completed
 
+### Asset-hash lookup endpoint
+
+- Goal: let buyers inspect provenance events by delivered asset hash without scanning
+  project manifests manually.
+- Scope: additive FastAPI lookup route, request/response schemas, model/index metadata,
+  Alembic migration, and focused backend regression tests.
+- Acceptance: `POST /assets/lookup` accepts 1-50 hashes, preserves request order,
+  returns `HTTP 200` misses, performs one batched query, matches hashes
+  case-insensitively, and reuses `EventRead` for matched events.
+- Result: the endpoint queries `output_asset_hash_value`, filters by hash algorithm,
+  groups matches by requested hash, and returns matched events or empty miss results.
+- Validation: targeted asset lookup tests, full API pytest suite, API Ruff, manifest
+  schema validation, Alembic SQL render, and `git diff --check` passed on the
+  cleaned branch.
+
 ### Deployment readiness
 
 - Goal: make the FastAPI API and Postgres deployable on Railway while allowing the

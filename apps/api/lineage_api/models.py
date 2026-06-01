@@ -27,7 +27,7 @@ class AIEvent(SQLModel, table=True):
     negative_prompt_text: str | None = None
     output_asset_url: str = Field(index=True, max_length=1000)
     output_asset_hash_algorithm: str | None = Field(default=None, max_length=32)
-    output_asset_hash_value: str | None = Field(default=None, max_length=128)
+    output_asset_hash_value: str | None = Field(default=None, index=True, max_length=128)
     output_asset_type: str = Field(index=True, max_length=32)
     output_mime_type: str | None = Field(default=None, max_length=120)
     output_duration_seconds: float | None = None

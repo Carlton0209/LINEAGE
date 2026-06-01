@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, HTTPException, Path, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select
 
@@ -14,7 +15,15 @@ from lineage_api.manifest import build_unsigned_manifest, sign_manifest
 from lineage_api.manifest_verifier import verification_result
 from lineage_api.models import AIEvent
 from lineage_api.pdf import generate_manifest_pdf
-from lineage_api.schemas import EventCreate, EventListResponse, EventRead, PROJECT_ID_PATTERN
+from lineage_api.schemas import (
+    AssetLookupRequest,
+    AssetLookupResponse,
+    AssetLookupResult,
+    EventCreate,
+    EventListResponse,
+    EventRead,
+    PROJECT_ID_PATTERN,
+)
 
 settings = get_settings()
 settings.require_production_signing_key()
@@ -79,6 +88,39 @@ def list_events(
 
     events = session.exec(statement.order_by(col(AIEvent.occurred_at).desc())).all()
     return EventListResponse(project_id=project_id, count=len(events), events=events)
+
+
+@app.post("/assets/lookup", response_model=AssetLookupResponse)
+def lookup_assets(payload: AssetLookupRequest, session: SessionDep) -> AssetLookupResponse:
+    unique_hashes = list(dict.fromkeys(payload.hashes))
+    statement = select(AIEvent).where(
+        func.lower(AIEvent.output_asset_hash_value).in_(unique_hashes)
+    )
+
+    if payload.algorithm:
+        statement = statement.where(AIEvent.output_asset_hash_algorithm == payload.algorithm)
+
+    events = session.exec(statement.order_by(col(AIEvent.occurred_at).desc())).all()
+    events_by_hash: dict[str, list[EventRead]] = {hash_value: [] for hash_value in unique_hashes}
+
+    for event in events:
+        if event.output_asset_hash_value is None:
+            continue
+
+        normalized_hash = event.output_asset_hash_value.lower()
+        if normalized_hash in events_by_hash:
+            events_by_hash[normalized_hash].append(EventRead.model_validate(event))
+
+    return AssetLookupResponse(
+        results=[
+            AssetLookupResult(
+                hash=hash_value,
+                matched=bool(events_by_hash.get(hash_value)),
+                events=events_by_hash.get(hash_value, []),
+            )
+            for hash_value in payload.hashes
+        ]
+    )
 
 
 async def _bounded_json_object(request: Request) -> dict:
