@@ -13,6 +13,24 @@ Last updated: 2026-06-08
 
 ## Completed
 
+### Runway capture extension deployment
+
+- Goal: bring the browser extension out of the old `codex/runway-capture-extension`
+  branch and make it deployable from the current mainline.
+- Scope: Manifest V3 Chrome extension, Runway content capture, service-worker hashing
+  and event submission, popup/options UI, extension build/package scripts, deployment
+  docs, and extension ignore rules.
+- Acceptance: the extension builds from the monorepo, can be loaded unpacked or packaged
+  as a zip, posts the existing `/events` payload shape to a configured API URL, keeps
+  local defaults intact, and documents the production API URL setup.
+- Result: `apps/extension` contains the extension source, `build` produces
+  `apps/extension/dist`, `package` produces
+  `apps/extension/lineage-capture-extension.zip`, and `DEPLOY.md` documents extension
+  install/configuration steps.
+- Validation: extension build, extension typecheck, extension package, manifest
+  schema validation, API pytest suite, zip contents inspection, and
+  `git diff --check` passed on the cleaned branch.
+
 ### Deployment readiness
 
 - Goal: make the FastAPI API and Postgres deployable on Railway while allowing the

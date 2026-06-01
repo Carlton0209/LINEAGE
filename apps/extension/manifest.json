@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "LINEAGE Capture",
+  "version": "0.1.0",
+  "description": "Captures AI generation events from creative tools for LINEAGE compliance.",
+  "permissions": ["storage", "activeTab", "notifications", "scripting"],
+  "host_permissions": ["https://*/*", "http://localhost/*", "http://127.0.0.1/*"],
+  "background": { "service_worker": "background/service-worker.js", "type": "module" },
+  "content_scripts": [
+    {
+      "matches": ["https://app.runwayml.com/*"],
+      "js": ["content/runway.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_page": "options/index.html",
+  "action": { "default_popup": "popup/index.html", "default_title": "LINEAGE Capture" },
+  "icons": { "128": "icon-128.png" }
+}

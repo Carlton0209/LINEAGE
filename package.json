@@ -5,9 +5,11 @@
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "build": "pnpm build:web",
+    "build:extension": "pnpm --filter @lineage/extension build",
     "build:web": "pnpm --filter @lineage/web build",
     "dev": "pnpm dev:web",
     "dev:web": "pnpm --filter @lineage/web dev",
+    "package:extension": "pnpm --filter @lineage/extension package",
     "validate:schema": "node packages/manifest-schema/scripts/validate-examples.mjs"
   },
   "devDependencies": {
