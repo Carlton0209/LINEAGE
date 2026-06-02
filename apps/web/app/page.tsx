@@ -102,23 +102,23 @@ function SectionHeadline({ children }: { children: React.ReactNode }) {
 function HeroSection() {
   return (
     <section className="relative z-10 mx-auto w-full max-w-[1440px] px-5 pb-20 pt-12 sm:px-8 sm:pb-28 sm:pt-16 lg:px-12 lg:pb-36 lg:pt-20">
-      <SectionEyebrow label="AI bill of materials for media delivery" number="01" />
+      <SectionEyebrow label="Verifiable AI provenance for media delivery" number="01" />
       <h1 className="text-[clamp(2.4rem,8vw,5.2rem)] font-medium leading-[1.04] tracking-[-0.03em] text-ink sm:text-[clamp(3rem,6vw,5.2rem)]">
-        Capture every AI touch.
+        Prove what AI touched
         <br className="hidden sm:block" />
         <span className="sm:hidden"> </span>
-        Turn production history
+        the work before
         <br className="hidden sm:block" />
         <span className="sm:hidden"> </span>
-        into proof.<span className="text-accent"> Deliver with confidence.</span>
+        you deliver.<span className="text-accent"> No gaps. No guesswork.</span>
       </h1>
       <p className="mt-7 max-w-[720px] text-[16px] leading-[1.55] text-ink-muted sm:mt-9 sm:text-[18px]">
-        LINEAGE records the tools, models, prompts, source assets, output hashes, operators, and
-        provenance behind AI-assisted work, then packages that history into a signed manifest and a
-        buyer-readable delivery summary.
+        LINEAGE turns AI-assisted production activity into a signed bill of materials: tools,
+        models, prompts, source assets, output hashes, operators, and provenance, packaged for
+        buyer review and independent verification.
       </p>
       <div className="mt-10 flex flex-col gap-4 sm:mt-12 sm:flex-row sm:gap-5">
-        <PrimaryButton label="See the pipeline" targetId="product" />
+        <PrimaryButton label="Review the proof chain" targetId="product" />
       </div>
     </section>
   );
@@ -127,41 +127,41 @@ function HeroSection() {
 function ProblemSection() {
   return (
     <SectionShell id="problem">
-      <SectionEyebrow label="Why this exists" number="02" />
+      <SectionEyebrow label="The delivery risk" number="02" />
       <SectionHeadline>
-        AI usage is now part
+        AI disclosure cannot be
         <br />
-        <span className="text-accent">of the delivery package.</span>
+        <span className="text-accent">rebuilt from memory.</span>
       </SectionHeadline>
       <div className="mt-10 grid grid-cols-1 items-start gap-8 sm:mt-14 lg:grid-cols-[1.3fr_1fr] lg:gap-12">
         <div>
           <p className="mb-5 text-[16px] font-medium leading-[1.55] text-ink sm:text-[18px]">
-            A film, ad, trailer, or music video can now pass through Runway, Suno, ElevenLabs,
-            custom ComfyUI workflows, and internal model experiments before it reaches delivery.
-            The creative result may be finished; the provenance often is not.
+            A finished film, ad, trailer, or music video may pass through Runway, Suno,
+            ElevenLabs, custom ComfyUI workflows, and internal model tests before it reaches a
+            buyer. The creative file may be complete while the AI record is still scattered.
           </p>
           <p className="mb-5 text-[16px] leading-[1.55] text-ink-muted sm:text-[18px]">
-            Buyers, completion bond companies, and E&amp;O insurers need a clear answer to simple
-            questions: which AI systems touched the work, what prompts and references were used,
-            what assets were created, and whether the record changed after signing.
+            At delivery, buyers and insurers ask precise questions: what AI systems were used,
+            which prompts and references shaped the output, which assets were generated, and
+            whether the disclosure record changed after approval.
           </p>
           <p className="text-[16px] font-medium text-accent-dk sm:text-[18px]">
-            LINEAGE turns that evidence into a structured, verifiable AI bill of materials instead
-            of another spreadsheet that has to be trusted by hand.
+            LINEAGE captures that evidence as it happens, then converges it into one structured,
+            signed AI bill of materials.
           </p>
         </div>
         <div className="rounded-2xl bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] sm:p-8">
           <p className="mb-5 text-[11px] font-medium uppercase tracking-[0.18em] text-ink-muted">
-            THE RECORD BUYERS NEED
+            WHAT DELIVERY NEEDS
           </p>
           <p className="text-[64px] font-medium leading-none text-ink sm:text-[72px]">1</p>
           <p className="mt-3 text-[13px] leading-[1.5] text-ink-muted sm:text-[14px]">
-            project-scoped ledger that connects prompts, models, assets, operators, and provenance
+            project ledger that connects AI events, prompts, outputs, hashes, and provenance
           </p>
           <div className="my-6 border-t border-ink-rule" />
           <p className="text-[64px] font-medium leading-none text-accent sm:text-[72px]">2</p>
           <p className="mt-3 text-[13px] leading-[1.5] text-ink-muted sm:text-[14px]">
-            outputs from the same source of truth: a signed JSON-LD manifest and a readable PDF
+            deliverables from the same source: a signed JSON manifest and a human-readable PDF
             summary
           </p>
         </div>
@@ -174,26 +174,26 @@ const modules = [
   {
     number: "01 / MODULE",
     code: "CAPTURE",
-    subtitle: "Evidence at creation time",
+    subtitle: "Record evidence while work is made",
     body:
-      "The first capture surface watches Runway ML generation activity and records timestamp, tool, model, prompt, output URL, asset hash, operator, and project ID.",
-    kicker: "The proof starts where the asset is made."
+      "The capture layer records the generation event itself: timestamp, tool, model, prompt, output URL, asset hash, operator, and project ID.",
+    kicker: "No end-of-project archaeology."
   },
   {
     number: "02 / MODULE",
     code: "LEDGER",
-    subtitle: "Project-scoped event log",
+    subtitle: "Converge events into one ledger",
     body:
-      "The backend normalizes every capture into a searchable ledger. Producers can filter by date, tool, and asset, then inspect the full chain before delivery.",
-    kicker: "One project, one source of truth."
+      "Every capture is normalized into a project-scoped audit trail. Producers can filter by date, tool, and asset, then inspect the chain before delivery.",
+    kicker: "One project. One record."
   },
   {
     number: "03 / MODULE",
     code: "CERTIFY",
-    subtitle: "Signed delivery artifact",
+    subtitle: "Generate the proof package",
     body:
-      "One click produces a JSON-LD manifest with C2PA-compatible structure, an Ed25519 signature, the public key fingerprint, and a PDF summary.",
-    kicker: "Anyone can verify the manifest without a LINEAGE account."
+      "One click produces a structured manifest, cryptographic signature, public key fingerprint, and PDF summary for non-technical review.",
+    kicker: "Verification does not require a LINEAGE account."
   }
 ];
 
@@ -207,8 +207,8 @@ function ProductSection() {
         <span className="text-accent">One unbroken chain.</span>
       </SectionHeadline>
       <p className="mt-5 max-w-[600px] text-[15px] text-ink-muted sm:text-[16px]">
-        The MVP proves one complete loop: capture a real generation, store it in a ledger, and
-        certify the project with a manifest that can be checked independently.
+        The product narrows the compliance workflow to one repeatable sequence: capture the AI
+        event, preserve it in the ledger, certify the project, and let the recipient verify it.
       </p>
       <div className="mt-12 grid grid-cols-1 gap-5 sm:mt-16 sm:gap-6 md:grid-cols-3">
         {modules.map((item) => (
@@ -239,32 +239,32 @@ const workflowSteps = [
   {
     number: "1",
     title: "Generate",
-    body: "A creator produces an asset in Runway with the project ID set in the browser extension."
+    body: "A creator generates an asset with the project ID attached to the session."
   },
   {
     number: "2",
     title: "Capture",
-    body: "The extension captures the actual prompt, model identifier, output URL, and timestamp."
+    body: "LINEAGE records the prompt, model, tool, output URL, and timestamp at the moment of use."
   },
   {
     number: "3",
     title: "Log",
-    body: "The service hashes the output asset and writes a normalized event into the project ledger."
+    body: "The output is hashed and written into a normalized, project-scoped ledger."
   },
   {
     number: "4",
     title: "Review",
-    body: "The dashboard shows the project history with filters by date, tool, and asset."
+    body: "The production team reviews the AI record before it becomes a delivery artifact."
   },
   {
     number: "5",
     title: "Sign",
-    body: "LINEAGE generates a canonical manifest and signs it with an Ed25519 keypair."
+    body: "LINEAGE produces a canonical manifest and signs the record cryptographically."
   },
   {
     number: "6",
     title: "Deliver",
-    body: "The buyer receives JSON plus PDF, then verifies the signature on a public verifier page."
+    body: "The buyer receives JSON and PDF, then checks the signature independently."
   }
 ];
 
@@ -298,8 +298,7 @@ function WorkflowSection() {
           CORE PRINCIPLE
         </p>
         <p className="text-[14px] text-ink sm:text-[15px]">
-          Capture close to creation. Preserve the evidence. Let every recipient verify the same
-          record.
+          Evidence captured early is easier to trust, easier to review, and harder to dispute.
         </p>
       </div>
     </SectionShell>
@@ -308,13 +307,13 @@ function WorkflowSection() {
 
 function TrustSection() {
   const guarantees = [
-    "The signature was produced by the private key matching the manifest's public key.",
-    "The manifest content has not changed since it was signed.",
-    "The signature uses Ed25519 with C2PA 2.1-compatible encoding."
+    "The manifest was signed by the private key corresponding to the embedded public key.",
+    "The manifest content has not changed since the signature was created.",
+    "The record can be verified independently from the LINEAGE application."
   ];
   const limits = [
-    "Whether the issuer is who they claim to be. Confirm the public key fingerprint with the issuer through a second channel.",
-    "Whether the underlying AI usage is allowed by a contract, license, union rule, or buyer policy. LINEAGE preserves evidence; people still make clearance decisions."
+    "Whether the issuer is who they claim to be. Confirm the public key fingerprint through a second channel.",
+    "Whether the AI usage is allowed by a contract, license, union rule, or buyer policy. LINEAGE preserves evidence; people still make clearance decisions."
   ];
 
   return (
@@ -362,8 +361,8 @@ function TrustSection() {
         </article>
       </div>
       <p className="mt-8 border-t border-ink-rule pt-6 text-[13px] italic text-ink-muted sm:text-[14px]">
-        Verification answers one narrow question: did this signed manifest change after the issuer
-        produced it? That narrow promise is what makes the record useful in delivery workflows.
+        The promise is intentionally narrow: prove the manifest has not changed since signing.
+        That narrow proof is what makes the record useful during delivery review.
       </p>
     </SectionShell>
   );
@@ -375,19 +374,19 @@ const footerCards = [
     eyebrow: "FOR BUYERS",
     title: "Verify a manifest",
     body:
-      "Paste a LINEAGE manifest, confirm the signature, and read the audit summary. No account required."
+      "Paste a manifest, confirm the signature, and read the AI usage summary. No account required."
   },
   {
     href: "/ledger",
     eyebrow: "FOR PRODUCTIONS",
-    title: "See the ledger",
+    title: "Inspect the ledger",
     body:
-      "Open the demo project ledger and inspect the captured AI events behind a delivery package."
+      "Open the demo ledger and see how captured AI events become a delivery-ready record."
   },
   {
     href: "mailto:hello@lineage.dev",
     eyebrow: "FOR PARTNERS",
-    title: "Map a delivery requirement",
+    title: "Bring your requirement",
     body:
       "Working on buyer-side AI disclosure, insurance review, or production compliance? Send the format you need to support."
   }
@@ -400,13 +399,13 @@ function GetStartedSection() {
         <div className="rounded-3xl bg-ink p-10 text-cream sm:p-16 lg:p-20">
           <SectionEyebrow dark label="Get started" number="06" />
           <h2 className="text-[clamp(2rem,5.5vw,3.6rem)] font-medium leading-[1.08] tracking-[-0.025em] text-cream">
-            A manifest your buyer
+            Give every reviewer
             <br />
-            <span className="text-accent">can actually inspect.</span>
+            <span className="text-accent">the same record.</span>
           </h2>
           <p className="mt-5 max-w-[640px] text-[16px] leading-[1.55] text-[#9BA1A8] sm:text-[18px]">
-            Use LINEAGE to turn AI production history into a signed, reviewable delivery artifact:
-            structured enough for systems, readable enough for humans.
+            LINEAGE converts AI production history into a signed, reviewable delivery artifact:
+            structured enough for systems, readable enough for humans, and narrow enough to verify.
           </p>
           <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-14 sm:gap-5 md:grid-cols-3">
             {footerCards.map((card) => (
