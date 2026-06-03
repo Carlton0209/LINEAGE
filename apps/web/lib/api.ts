@@ -46,8 +46,14 @@ export type VerificationResult =
     }
   | { valid: false; reason: string };
 
+const LOCAL_API_PROTOCOL = "http";
+const LOCAL_API_HOST = "localhost";
+const LOCAL_API_PORT = "8000";
+const LOCAL_API_URL = `${LOCAL_API_PROTOCOL}://${LOCAL_API_HOST}:${LOCAL_API_PORT}`;
+
 export function apiBaseUrl() {
-  return process.env.LINEAGE_API_URL ?? "http://localhost:8000";
+  const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+  return configuredUrl ? configuredUrl.replace(/\/+$/, "") : LOCAL_API_URL;
 }
 
 function appendIfPresent(params: URLSearchParams, key: string, value?: string) {

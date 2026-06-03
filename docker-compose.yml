@@ -22,6 +22,7 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://lineage:lineage@postgres:5432/lineage
       LINEAGE_ENV: docker
+      LINEAGE_CORS_ORIGINS: ${LINEAGE_CORS_ORIGINS:-http://localhost:3000}
       LINEAGE_ISSUER_ID: ${LINEAGE_ISSUER_ID:-lineage-local-dev}
       LINEAGE_ISSUER_NAME: ${LINEAGE_ISSUER_NAME:-LINEAGE Local Development Issuer}
       LINEAGE_ISSUER_URL: ${LINEAGE_ISSUER_URL:-https://lineage.dev}
@@ -38,7 +39,7 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
     environment:
-      LINEAGE_API_URL: http://api:8000
+      NEXT_PUBLIC_API_URL: http://api:8000
     ports:
       - "3000:3000"
     depends_on:

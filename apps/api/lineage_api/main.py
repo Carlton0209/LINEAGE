@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Query, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select
@@ -14,7 +15,16 @@ from lineage_api.models import AIEvent
 from lineage_api.pdf import generate_manifest_pdf
 from lineage_api.schemas import EventCreate, EventListResponse, EventRead
 
-app = FastAPI(title=get_settings().app_name, version="0.1.0")
+settings = get_settings()
+settings.require_production_signing_key()
+
+app = FastAPI(title=settings.app_name, version="0.1.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origin_list,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
+)
 
 
 SessionDep = Annotated[Session, Depends(get_session)]

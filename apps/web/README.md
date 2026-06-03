@@ -9,7 +9,8 @@ pnpm --filter @lineage/web dev
 Environment:
 
 ```sh
-LINEAGE_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=https://your-lineage-api.example.com
 ```
 
-The page is server-rendered and uses route handlers to proxy manifest JSON and PDF downloads from the API.
+Set `NEXT_PUBLIC_API_URL` when the web app should use a deployed API. Leave it unset
+for local development; the app has a built-in local API fallback.
