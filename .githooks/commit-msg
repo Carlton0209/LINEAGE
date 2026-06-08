@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+# Reject low-effort commit messages (the "1" problem).
+msg_file="$1"
+subject="$(sed -n '1{/^#/d;p;}' "$msg_file" | head -1)"
+
+case "$subject" in
+  "Merge "*|"Revert "*|"fixup! "*|"squash! "*) exit 0 ;;
+esac
+
+len=$(printf '%s' "$subject" | tr -d '[:space:]' | wc -c)
+
+if [ "$len" -lt 10 ]; then
+  echo "commit-msg: subject too short (${len} chars). Write a real message." >&2
+  echo "  bad:  '1'   good:  'feat(api): add Railway deployment readiness'" >&2
+  exit 1
+fi
+
+if printf '%s' "$subject" | grep -Eq '^[0-9]+$|^(wip|tmp|temp|test|fix|update|stuff|asdf|\.+)$'; then
+  echo "commit-msg: '$subject' is a placeholder. Describe the change." >&2
+  exit 1
+fi
+exit 0

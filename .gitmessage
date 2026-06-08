@@ -1,0 +1,10 @@
+# <type>(<scope>): <subject>   # <= ~60 chars, imperative ("add", not "added")
+#
+# <body: what and why, wrapped at 72 cols. Expected for non-trivial work.>
+#
+# type:  feat fix refactor perf docs test build ci chore
+# scope: api web extension schema deploy
+#
+# Rules enforced by .githooks/commit-msg:
+#   - subject >= 10 chars, not a bare number or placeholder
+#   - one logical change per commit (split deploy work from homepage edits)
