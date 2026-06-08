@@ -46,8 +46,15 @@ export type VerificationResult =
     }
   | { valid: false; reason: string };
 
+const LOCAL_API_PROTOCOL = "http";
+const LOCAL_API_HOST = "localhost";
+const LOCAL_API_PORT = "8000";
+const LOCAL_API_URL = `${LOCAL_API_PROTOCOL}://${LOCAL_API_HOST}:${LOCAL_API_PORT}`;
+export const PROJECT_ID_PATTERN = /^prj_[A-Za-z0-9][A-Za-z0-9_-]{2,127}$/;
+
 export function apiBaseUrl() {
-  return process.env.LINEAGE_API_URL ?? "http://localhost:8000";
+  const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+  return configuredUrl ? configuredUrl.replace(/\/+$/, "") : LOCAL_API_URL;
 }
 
 function appendIfPresent(params: URLSearchParams, key: string, value?: string) {
@@ -92,6 +99,21 @@ export function downloadParams(projectId: string) {
   const params = new URLSearchParams();
   params.set("project_id", projectId);
   return params.toString();
+}
+
+export function isValidProjectId(projectId: string) {
+  return PROJECT_ID_PATTERN.test(projectId);
+}
+
+export function projectIdFromSearchParam(params: URLSearchParams, fallback = "prj_week_zero") {
+  const rawProjectId = params.get("project_id")?.trim();
+  const projectId = rawProjectId || fallback;
+  return isValidProjectId(projectId) ? projectId : null;
+}
+
+export function manifestDownloadFilename(projectId: string, extension: "json" | "pdf") {
+  const safeProjectId = isValidProjectId(projectId) ? projectId : "invalid-project";
+  return `lineage-${safeProjectId}-manifest.${extension}`;
 }
 
 export async function verifyManifest(rawJson: string): Promise<VerificationResult> {

@@ -60,4 +60,5 @@ curl -X POST http://localhost:8000/manifest/prj_week_zero/pdf \
 pnpm dev:web
 ```
 
-The dashboard runs at `http://localhost:3000` and reads the API at `LINEAGE_API_URL`, defaulting to `http://localhost:8000`.
+The dashboard runs at `http://localhost:3000` and reads the API at `NEXT_PUBLIC_API_URL`,
+defaulting to `http://localhost:8000`.

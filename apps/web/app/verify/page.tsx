@@ -4,7 +4,7 @@ import { useEffect, useState, type DragEvent, type FormEvent } from "react";
 import { ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { EXAMPLE_MANIFEST_JSON } from "@/lib/example-manifest";
-import { verifyManifest, type VerificationResult } from "@/lib/api";
+import { apiBaseUrl, verifyManifest, type VerificationResult } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -263,6 +263,7 @@ export default function VerifyPage() {
   }, []);
 
   const canVerify = manifestJson.trim().length > 0 && !isVerifying;
+  const manifestCurlCommand = `curl -X POST ${apiBaseUrl()}/manifest/prj_demo_feature`;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -401,9 +402,7 @@ export default function VerifyPage() {
                   This example uses a placeholder signature so the result will be
                   &apos;cannot be verified.&apos; To see a passing verification, generate a manifest
                   from the API:{" "}
-                  <code className="font-mono">
-                    curl -X POST http://localhost:8000/manifest/prj_demo_feature
-                  </code>{" "}
+                  <code className="font-mono">{manifestCurlCommand}</code>{" "}
                   and paste the output here.
                 </p>
               ) : null}

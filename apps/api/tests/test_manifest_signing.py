@@ -5,7 +5,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from fastapi.testclient import TestClient
 
 from lineage_api.config import Settings
-from lineage_api.main import app
+from lineage_api.main import MAX_VERIFY_MANIFEST_BYTES, app
 from lineage_api.crypto import raw_private_key_b64url
 from lineage_api.manifest import build_unsigned_manifest, sign_manifest
 from lineage_api.manifest_verifier import verification_result, verify_signed_manifest
@@ -81,6 +81,57 @@ def test_verification_result_returns_manifest_summary() -> None:
     assert result["publicKeyFingerprint"].startswith("test:")
 
 
+def test_verification_result_rejects_mutated_signature_metadata() -> None:
+    settings = make_settings()
+    unsigned_manifest = build_unsigned_manifest(
+        "prj_week_zero",
+        [make_event()],
+        settings,
+        generated_at=datetime(2026, 5, 20, 15, 0, 0, tzinfo=timezone.utc),
+    )
+    signed_manifest = sign_manifest(unsigned_manifest, settings)
+    signed_manifest["signature"]["digest"]["algorithm"] = "MD5"
+
+    result = verification_result(signed_manifest)
+
+    assert result == {
+        "valid": False,
+        "reason": "manifest signature.digest.algorithm must be SHA-256",
+    }
+
+
+def test_verification_result_rejects_signed_manifest_missing_summary_fields() -> None:
+    settings = make_settings()
+    unsigned_manifest = build_unsigned_manifest(
+        "prj_week_zero",
+        [make_event()],
+        settings,
+        generated_at=datetime(2026, 5, 20, 15, 0, 0, tzinfo=timezone.utc),
+    )
+    unsigned_manifest.pop("project")
+    signed_manifest = sign_manifest(unsigned_manifest, settings)
+
+    result = verification_result(signed_manifest)
+
+    assert result == {"valid": False, "reason": "manifest is missing project"}
+
+
+def test_verification_result_rejects_signed_manifest_with_empty_events() -> None:
+    settings = make_settings()
+    unsigned_manifest = build_unsigned_manifest(
+        "prj_week_zero",
+        [make_event()],
+        settings,
+        generated_at=datetime(2026, 5, 20, 15, 0, 0, tzinfo=timezone.utc),
+    )
+    unsigned_manifest["events"] = []
+    signed_manifest = sign_manifest(unsigned_manifest, settings)
+
+    result = verification_result(signed_manifest)
+
+    assert result == {"valid": False, "reason": "manifest events must be a non-empty array"}
+
+
 def test_tampered_manifest_fails_verification() -> None:
     settings = make_settings()
     unsigned_manifest = build_unsigned_manifest(
@@ -127,6 +178,72 @@ def test_verify_manifest_endpoint_roundtrip_and_failure() -> None:
         "valid": False,
         "reason": "manifest digest does not match canonical unsigned payload",
     }
+
+
+def test_verify_manifest_endpoint_rejects_oversized_payload_before_verifier(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    verifier_called = False
+
+    def fake_verification_result(_manifest: dict) -> dict:
+        nonlocal verifier_called
+        verifier_called = True
+        return {"valid": True}
+
+    monkeypatch.setattr("lineage_api.main.verification_result", fake_verification_result)
+    client = TestClient(app)
+    oversized_manifest = b'{"padding":"' + (b"a" * MAX_VERIFY_MANIFEST_BYTES) + b'"}'
+
+    response = client.post(
+        "/manifest/verify",
+        content=oversized_manifest,
+        headers={"Content-Type": "application/json"},
+    )
+
+    assert response.status_code == 413
+    assert response.json() == {"detail": "manifest verification payload exceeds 1 MB"}
+    assert verifier_called is False
+
+
+def test_verify_manifest_endpoint_rejects_non_object_payload_before_verifier(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    verifier_called = False
+
+    def fake_verification_result(_manifest: dict) -> dict:
+        nonlocal verifier_called
+        verifier_called = True
+        return {"valid": True}
+
+    monkeypatch.setattr("lineage_api.main.verification_result", fake_verification_result)
+    client = TestClient(app)
+
+    response = client.post("/manifest/verify", json=[])
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "manifest verification payload must be a JSON object"}
+    assert verifier_called is False
+
+
+def test_manifest_routes_reject_invalid_project_id_before_signing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    signing_called = False
+
+    def fake_signed_manifest_for_project(project_id: str, _session: object) -> dict:
+        nonlocal signing_called
+        signing_called = True
+        return {"project": {"id": project_id}}
+
+    monkeypatch.setattr("lineage_api.main._signed_manifest_for_project", fake_signed_manifest_for_project)
+    client = TestClient(app)
+
+    manifest_response = client.post("/manifest/not-a-project")
+    pdf_response = client.post("/manifest/not-a-project/pdf")
+
+    assert manifest_response.status_code == 422
+    assert pdf_response.status_code == 422
+    assert signing_called is False
 
 
 def test_manifest_pdf_generation_returns_pdf_bytes() -> None:

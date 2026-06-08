@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import AxionHomepage from "@/components/axion-homepage";
 
 export const metadata: Metadata = {
-  title: "Axion Studio",
-  description: "A strategy-led design agency landing page with animated shader motion."
+  title: "LINEAGE",
+  description: "Verifiable AI bills of materials for media delivery."
 };
 
 export default function HomePage() {
