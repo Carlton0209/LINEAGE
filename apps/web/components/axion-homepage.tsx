@@ -76,6 +76,33 @@ const artifactTabs = [
   }
 ] as const;
 
+const dropdownItems = [
+  {
+    label: "Proof",
+    href: "#proof",
+    description: "Prompts, hashes, signatures.",
+    icon: ShieldCheck
+  },
+  {
+    label: "Flow",
+    href: "#flow",
+    description: "Capture to ledger to manifest.",
+    icon: Fingerprint
+  },
+  {
+    label: "Deliver",
+    href: "#deliver",
+    description: "Buyer-ready review package.",
+    icon: FileCheck2
+  },
+  {
+    label: "Verify",
+    href: "/verify",
+    description: "Independent signature check.",
+    icon: Sparkles
+  }
+] as const;
+
 type ProofModeId = (typeof proofModes)[number]["id"];
 type ArtifactTabId = (typeof artifactTabs)[number]["id"];
 
@@ -150,6 +177,7 @@ function Cta({
 
 function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navLinks = [
     { label: "Proof", href: "#proof" },
     { label: "Flow", href: "#flow" },
@@ -178,6 +206,70 @@ function Navigation() {
                 {link.label}
               </a>
             ))}
+            <div
+              className="relative"
+              onMouseEnter={() => setIsDropdownOpen(true)}
+              onMouseLeave={() => setIsDropdownOpen(false)}
+            >
+              <button
+                aria-expanded={isDropdownOpen}
+                aria-haspopup="menu"
+                className="group inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[14px] text-ink transition-colors duration-300 hover:bg-cream-soft hover:text-ink-muted"
+                onClick={() => setIsDropdownOpen((value) => !value)}
+                type="button"
+              >
+                Explore
+                <ChevronDown
+                  className={`transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`}
+                  size={15}
+                />
+              </button>
+              <div
+                className={`absolute left-1/2 top-[calc(100%+14px)] z-30 w-[340px] -translate-x-1/2 transition-all duration-300 ${
+                  isDropdownOpen
+                    ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
+                    : "pointer-events-none -translate-y-2 scale-[0.98] opacity-0"
+                }`}
+              >
+                <div className="rounded-3xl border border-white/70 bg-white p-3 shadow-[0_24px_70px_rgba(17,17,17,0.16)]">
+                  <div className="mb-2 flex items-center justify-between px-3 py-2">
+                    <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink-muted">
+                      Navigate
+                    </span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                  </div>
+                  <div className="grid gap-1" role="menu">
+                    {dropdownItems.map((item) => {
+                      const Icon = item.icon;
+
+                      return (
+                        <a
+                          className="group/item flex items-center gap-3 rounded-2xl px-3 py-3 text-ink transition-all duration-300 hover:bg-cream-soft"
+                          href={item.href}
+                          key={item.label}
+                          onClick={() => setIsDropdownOpen(false)}
+                          role="menuitem"
+                        >
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cream text-ink transition-colors duration-300 group-hover/item:bg-accent group-hover/item:text-white">
+                            <Icon size={17} />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-[14px] font-medium leading-5">{item.label}</span>
+                            <span className="block truncate text-[12px] leading-5 text-ink-muted">
+                              {item.description}
+                            </span>
+                          </span>
+                          <ArrowRight
+                            className="text-ink-muted transition-transform duration-300 group-hover/item:translate-x-1 group-hover/item:text-accent"
+                            size={15}
+                          />
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="hidden items-center gap-4 md:flex">

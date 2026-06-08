@@ -1,7 +1,8 @@
+import json
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException, Query, status
+from fastapi import Depends, FastAPI, HTTPException, Path, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from sqlalchemy.exc import IntegrityError
@@ -13,7 +14,7 @@ from lineage_api.manifest import build_unsigned_manifest, sign_manifest
 from lineage_api.manifest_verifier import verification_result
 from lineage_api.models import AIEvent
 from lineage_api.pdf import generate_manifest_pdf
-from lineage_api.schemas import EventCreate, EventListResponse, EventRead
+from lineage_api.schemas import EventCreate, EventListResponse, EventRead, PROJECT_ID_PATTERN
 
 settings = get_settings()
 settings.require_production_signing_key()
@@ -28,6 +29,8 @@ app.add_middleware(
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
+ProjectIdPath = Annotated[str, Path(pattern=PROJECT_ID_PATTERN)]
+MAX_VERIFY_MANIFEST_BYTES = 1_048_576
 
 
 @app.get("/healthz")
@@ -54,7 +57,7 @@ def create_event(payload: EventCreate, session: SessionDep) -> AIEvent:
 @app.get("/events", response_model=EventListResponse)
 def list_events(
     session: SessionDep,
-    project_id: str = Query(min_length=1),
+    project_id: str = Query(pattern=PROJECT_ID_PATTERN),
     start_date: datetime | None = None,
     end_date: datetime | None = None,
     tool: str | None = None,
@@ -78,8 +81,47 @@ def list_events(
     return EventListResponse(project_id=project_id, count=len(events), events=events)
 
 
+async def _bounded_json_object(request: Request) -> dict:
+    content_length = request.headers.get("content-length")
+    if content_length is not None:
+        try:
+            if int(content_length) > MAX_VERIFY_MANIFEST_BYTES:
+                raise HTTPException(
+                    status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+                    detail="manifest verification payload exceeds 1 MB",
+                )
+        except ValueError:
+            pass
+
+    body = bytearray()
+    async for chunk in request.stream():
+        body.extend(chunk)
+        if len(body) > MAX_VERIFY_MANIFEST_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+                detail="manifest verification payload exceeds 1 MB",
+            )
+
+    try:
+        manifest = json.loads(body)
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="request body must be valid JSON",
+        ) from None
+
+    if not isinstance(manifest, dict):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="manifest verification payload must be a JSON object",
+        )
+
+    return manifest
+
+
 @app.post("/manifest/verify")
-def verify_manifest(manifest: dict) -> dict:
+async def verify_manifest(request: Request) -> dict:
+    manifest = await _bounded_json_object(request)
     return verification_result(manifest)
 
 
@@ -103,12 +145,12 @@ def _signed_manifest_for_project(project_id: str, session: Session) -> dict:
 
 
 @app.post("/manifest/{project_id}")
-def generate_manifest(project_id: str, session: SessionDep) -> dict:
+def generate_manifest(project_id: ProjectIdPath, session: SessionDep) -> dict:
     return _signed_manifest_for_project(project_id, session)
 
 
 @app.post("/manifest/{project_id}/pdf")
-def generate_manifest_pdf_response(project_id: str, session: SessionDep) -> Response:
+def generate_manifest_pdf_response(project_id: ProjectIdPath, session: SessionDep) -> Response:
     manifest = _signed_manifest_for_project(project_id, session)
     pdf_bytes = generate_manifest_pdf(manifest)
     filename = f"lineage-{project_id}-manifest.pdf"

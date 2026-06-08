@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
-import { apiBaseUrl } from "@/lib/api";
+import { apiBaseUrl, manifestDownloadFilename, projectIdFromSearchParam } from "@/lib/api";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const projectId = url.searchParams.get("project_id") ?? "prj_week_zero";
+  const projectId = projectIdFromSearchParam(url.searchParams);
+  if (!projectId) {
+    return NextResponse.json({ error: "Invalid project_id" }, { status: 400 });
+  }
 
-  const response = await fetch(`${apiBaseUrl()}/manifest/${projectId}/pdf`, {
+  const response = await fetch(`${apiBaseUrl()}/manifest/${encodeURIComponent(projectId)}/pdf`, {
     method: "POST",
     cache: "no-store"
   });
@@ -22,7 +25,7 @@ export async function GET(request: Request) {
   const body = await response.arrayBuffer();
   return new Response(body, {
     headers: {
-      "Content-Disposition": `attachment; filename="lineage-${projectId}-manifest.pdf"`,
+      "Content-Disposition": `attachment; filename="${manifestDownloadFilename(projectId, "pdf")}"`,
       "Content-Type": "application/pdf"
     }
   });
