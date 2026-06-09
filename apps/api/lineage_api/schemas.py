@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from math import isfinite
-from typing import Literal
+from typing import Any, Literal
 from urllib.parse import urlparse
 from uuid import uuid4
 
@@ -207,3 +207,40 @@ class EventListResponse(BaseModel):
     project_id: str
     count: int
     events: list[EventRead]
+
+
+class AssetLookupRequest(PayloadModel):
+    hashes: list[str] = Field(min_length=1, max_length=50)
+    algorithm: str = Field(default="SHA-256", min_length=1, max_length=32)
+
+    @field_validator("hashes", mode="before")
+    @classmethod
+    def strip_hashes(cls, value: Any) -> Any:
+        if isinstance(value, list):
+            return [item.strip() if isinstance(item, str) else item for item in value]
+        return value
+
+    @field_validator("hashes")
+    @classmethod
+    def require_hex_hashes(cls, value: list[str]) -> list[str]:
+        for hash_value in value:
+            if not re.fullmatch(r"[0-9a-fA-F]{16,128}", hash_value):
+                raise ValueError("hashes must be hex strings 16-128 characters long")
+        return [hash_value.lower() for hash_value in value]
+
+    @field_validator("algorithm", mode="before")
+    @classmethod
+    def strip_algorithm(cls, value: Any) -> Any:
+        if isinstance(value, str):
+            return value.strip()
+        return value
+
+
+class AssetLookupResult(BaseModel):
+    hash: str
+    matched: bool
+    events: list[EventRead]
+
+
+class AssetLookupResponse(BaseModel):
+    results: list[AssetLookupResult]
