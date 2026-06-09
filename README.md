@@ -1,3 +1,11 @@
+## Run the demo
+
+1. `docker compose up`
+2. Open `http://localhost:3000`
+3. Go to Ledger, use Project ID `prj_demo_feature`, and click `Filter` to see captured AI events
+4. Click `Generate JSON` for the signed manifest, then `Generate PDF` to download the signed PDF
+5. Go to Verify, paste the manifest JSON, and see it verify
+
 # LINEAGE
 
 LINEAGE is a compliance layer for AI-assisted media production. The week-zero MVP proves the core pipeline: capture AI generation events, write them to a ledger, and certify a project-scoped AI bill of materials.
