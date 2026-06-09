@@ -23,6 +23,7 @@ dev = [
 
 [project.scripts]
 lineage-generate-signing-key = "lineage_api.cli.generate_signing_key:main"
+lineage-seed-demo = "lineage_api.cli.seed_demo:main"
 lineage-verify-manifest = "lineage_api.cli.verify_manifest:main"
 
 [build-system]
