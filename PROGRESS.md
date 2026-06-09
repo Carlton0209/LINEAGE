@@ -13,6 +13,28 @@ Last updated: 2026-06-08
 
 ## Completed
 
+### Deployment verification and commit-message guardrails
+
+- Goal: move deployment readiness toward reproducible local verification while
+  preventing future placeholder commit messages.
+- Scope: repository commit-message hook/template, API `uv.lock`, frozen Docker
+  dependency installation, local container verification docs, Railway production
+  signing-key footgun docs, and progress tracking.
+- Acceptance: placeholder commit subjects are rejected, real subjects pass, API
+  Docker builds from a committed lockfile, local verification steps are documented,
+  existing checks stay green, and any unavailable container runtime is recorded
+  honestly instead of implied as passing.
+- Result: commit message guardrails are configured; `apps/api/uv.lock` is generated;
+  `apps/api/Dockerfile` now uses `uv sync --frozen --no-cache --no-dev`; `DEPLOY.md`
+  includes the local Docker Compose verification pipeline and the Railway
+  `LINEAGE_ENV=production` requirement.
+- Validation: hook self-test, `uv lock`, `uv sync --frozen --no-cache --no-dev`,
+  API Ruff, API pytest, Alembic SQL render, manifest schema validation, web build,
+  web typecheck after build, hardcoded-localhost grep, and `git diff --check`
+  passed on the cleaned branch.
+- Gap: the local Docker Compose container pipeline was not run because this machine
+  does not have `docker`, `podman`, `nerdctl`, or `colima` on `PATH`.
+
 ### Runway capture extension deployment
 
 - Goal: bring the browser extension out of the old `codex/runway-capture-extension`

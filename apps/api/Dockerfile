@@ -10,12 +10,12 @@ WORKDIR /app
 
 COPY --from=ghcr.io/astral-sh/uv:0.5.4 /uv /uvx /usr/local/bin/
 
-COPY apps/api/pyproject.toml apps/api/README.md ./
+COPY apps/api/pyproject.toml apps/api/uv.lock apps/api/README.md ./
 COPY apps/api/lineage_api ./lineage_api
 COPY apps/api/alembic.ini ./alembic.ini
 COPY apps/api/alembic ./alembic
 
-RUN uv sync --no-cache --no-dev
+RUN uv sync --frozen --no-cache --no-dev
 
 EXPOSE 8000
 

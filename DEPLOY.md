@@ -82,7 +82,61 @@ Expected response:
 {"status":"ok","environment":"production"}
 ```
 
-## 4. Frontend on Vercel
+### Railway production footgun
+
+Set `LINEAGE_ENV=production` on Railway. Without it, the production signing-key
+fail-fast does not run at boot. The API can start with no
+`LINEAGE_ED25519_PRIVATE_KEY_B64URL` and then fail only when the first
+`/manifest` request needs to sign.
+
+## 4. Local Verification
+
+Use Docker Compose to verify the API image, Postgres dependency, migrations,
+event ingestion, manifest signing, verifier CLI, and PDF generation together.
+
+Generate a disposable local signing key and export only the private key:
+
+```sh
+eval "$(uv run --project apps/api lineage-generate-signing-key | grep '^LINEAGE_ED25519_PRIVATE_KEY_B64URL=')"
+```
+
+Build and start Postgres plus the API:
+
+```sh
+docker compose up --build postgres api
+```
+
+In another shell, run the five checks:
+
+```sh
+export API_URL='http://localhost:8000'
+export LINEAGE_PROJECT_ID='prj_week_zero'
+export LINEAGE_MANIFEST_JSON='/tmp/lineage-prj_week_zero-manifest.json'
+export LINEAGE_MANIFEST_PDF='/tmp/lineage-prj_week_zero-manifest.pdf'
+
+curl -fsS "$API_URL/healthz"
+
+curl -fsS -X POST "$API_URL/events" \
+  -H 'Content-Type: application/json' \
+  --data-binary @apps/api/examples/runway-event.json
+
+curl -fsS -X POST "$API_URL/manifest/$LINEAGE_PROJECT_ID" \
+  -o "$LINEAGE_MANIFEST_JSON"
+
+uv run --project apps/api lineage-verify-manifest "$LINEAGE_MANIFEST_JSON"
+
+curl -fsS -X POST "$API_URL/manifest/$LINEAGE_PROJECT_ID/pdf" \
+  -o "$LINEAGE_MANIFEST_PDF"
+test -s "$LINEAGE_MANIFEST_PDF"
+```
+
+Shut the local stack down after verification:
+
+```sh
+docker compose down
+```
+
+## 5. Frontend on Vercel
 
 In the Vercel project settings, set:
 
@@ -93,7 +147,7 @@ NEXT_PUBLIC_API_URL=https://your-lineage-api.up.railway.app
 Use the API origin only, with no trailing slash. Redeploy the Vercel project after
 changing this variable.
 
-## 5. Extension
+## 6. Extension
 
 Build and package the LINEAGE Capture Chrome extension:
 
@@ -130,7 +184,7 @@ Use the API origin only, with no trailing slash. Set `Project ID` to a real
 project, for example `prj_week_zero`, and keep a stable `Operator ID` such as
 `op_extension`.
 
-## 6. Verify
+## 7. Deployed Verification
 
 Use a real project id and a real event payload for the end-to-end checks:
 
