@@ -129,9 +129,8 @@ export function manifestDownloadFilename(projectId: string, extension: "json" | 
 }
 
 export async function verifyManifest(rawJson: string): Promise<VerificationResult> {
-  let parsed: unknown;
   try {
-    parsed = JSON.parse(rawJson);
+    JSON.parse(rawJson);
   } catch {
     return { valid: false, reason: "Pasted text is not valid JSON." };
   }
@@ -139,7 +138,7 @@ export async function verifyManifest(rawJson: string): Promise<VerificationResul
   const response = await fetch("/api/verify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(parsed),
+    body: rawJson,
     cache: "no-store"
   });
 

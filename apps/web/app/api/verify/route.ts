@@ -59,9 +59,10 @@ async function readBoundedJsonObject(request: Request) {
     offset += chunk.byteLength;
   }
 
+  const rawJson = new TextDecoder().decode(body);
   let manifest: unknown;
   try {
-    manifest = JSON.parse(new TextDecoder().decode(body));
+    manifest = JSON.parse(rawJson);
   } catch {
     return {
       error: NextResponse.json(
@@ -80,7 +81,7 @@ async function readBoundedJsonObject(request: Request) {
     };
   }
 
-  return { manifest };
+  return { rawJson };
 }
 
 export async function POST(request: Request) {
@@ -93,7 +94,7 @@ export async function POST(request: Request) {
     const upstream = await fetch(`${apiBaseUrl()}/manifest/verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.manifest),
+      body: parsed.rawJson,
       cache: "no-store"
     });
 
