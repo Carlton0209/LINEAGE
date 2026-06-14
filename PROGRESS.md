@@ -13,6 +13,25 @@ Last updated: 2026-06-14
 
 ## Completed
 
+### Buyer-side video inspector
+
+- Goal: let a buyer check whether a finished video is a byte-exact asset recorded in
+  LINEAGE and review the AI provenance events associated with that fingerprint.
+- Scope: browser-side video metadata and SHA-256 hashing, a hash-only Next.js lookup
+  proxy, matched/miss/service-unreachable result states, and shared navigation updates.
+- Acceptance: video bytes remain on the buyer's device; only a 64-character SHA-256
+  fingerprint reaches `POST /assets/lookup`; matched records show project, tool, model,
+  prompt, asset type, and UTC capture time; misses explain the re-encoding limitation.
+- Result: `/inspect` now provides drag/drop or file selection, a compact metadata
+  summary, local Web Crypto hashing, exact-hash ledger lookup, and calm buyer-facing
+  outcomes using the verifier's cream and terracotta visual system.
+- Privacy: the client serializes only `{ hash }`, and the web route constructs a new
+  upstream body containing only `hashes` and `algorithm`; no file bytes or local video
+  metadata are uploaded.
+- Validation: web typecheck, lint, production build, all 43 API tests, manifest schema
+  validation, desktop/mobile browser inspection, HTTP 200 boundary-result checks, and
+  matched/miss proxy checks against a local lookup stub passed.
+
 ### Local demo network exposure hardening
 
 - Goal: prevent the one-command Docker Compose demo from exposing its database,
