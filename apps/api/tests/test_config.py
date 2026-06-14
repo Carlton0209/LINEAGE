@@ -1,8 +1,26 @@
+from pathlib import Path
+
 import pytest
 from fastapi.testclient import TestClient
+import yaml
 
 from lineage_api.config import Settings
 from lineage_api.main import app
+
+
+def test_demo_compose_publishes_ports_on_loopback_only() -> None:
+    compose_path = Path(__file__).resolve().parents[3] / "docker-compose.yml"
+    compose = yaml.safe_load(compose_path.read_text())
+
+    assert {
+        service_name: service.get("ports", [])
+        for service_name, service in compose["services"].items()
+        if service.get("ports")
+    } == {
+        "postgres": ["127.0.0.1:5432:5432"],
+        "api": ["127.0.0.1:8000:8000"],
+        "web": ["127.0.0.1:3000:3000"],
+    }
 
 
 def test_database_url_normalizes_platform_postgres_scheme() -> None:

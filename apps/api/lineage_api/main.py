@@ -16,6 +16,7 @@ from lineage_api.manifest_verifier import verification_result
 from lineage_api.models import AIEvent
 from lineage_api.pdf import generate_manifest_pdf
 from lineage_api.schemas import (
+    AssetType,
     AssetLookupRequest,
     AssetLookupResponse,
     AssetLookupResult,
@@ -23,6 +24,7 @@ from lineage_api.schemas import (
     EventListResponse,
     EventRead,
     PROJECT_ID_PATTERN,
+    TOOL_ID_PATTERN,
 )
 
 settings = get_settings()
@@ -69,9 +71,9 @@ def list_events(
     project_id: str = Query(pattern=PROJECT_ID_PATTERN),
     start_date: datetime | None = None,
     end_date: datetime | None = None,
-    tool: str | None = None,
-    asset: str | None = None,
-    asset_type: str | None = None,
+    tool: str | None = Query(default=None, pattern=TOOL_ID_PATTERN),
+    asset: str | None = Query(default=None, min_length=1, max_length=1000),
+    asset_type: AssetType | None = None,
 ) -> EventListResponse:
     statement = select(AIEvent).where(AIEvent.project_id == project_id)
 
@@ -82,7 +84,7 @@ def list_events(
     if tool is not None:
         statement = statement.where(AIEvent.tool_identifier == tool)
     if asset is not None:
-        statement = statement.where(AIEvent.output_asset_url.contains(asset))
+        statement = statement.where(AIEvent.output_asset_url.contains(asset, autoescape=True))
     if asset_type is not None:
         statement = statement.where(AIEvent.output_asset_type == asset_type)
 

@@ -165,3 +165,22 @@ def test_asset_lookup_rejects_non_hex_hash() -> None:
 
     assert response.status_code == 422
     assert session.exec_count == 0
+
+
+def test_asset_lookup_rejects_short_hex_hash() -> None:
+    with lookup_client([]) as (client, session):
+        response = client.post("/assets/lookup", json={"hashes": ["a" * 16]})
+
+    assert response.status_code == 422
+    assert session.exec_count == 0
+
+
+def test_asset_lookup_rejects_unknown_hash_algorithm() -> None:
+    with lookup_client([]) as (client, session):
+        response = client.post(
+            "/assets/lookup",
+            json={"hashes": [KNOWN_HASH], "algorithm": "SHA-1"},
+        )
+
+    assert response.status_code == 422
+    assert session.exec_count == 0

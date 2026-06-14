@@ -211,7 +211,7 @@ class EventListResponse(BaseModel):
 
 class AssetLookupRequest(PayloadModel):
     hashes: list[str] = Field(min_length=1, max_length=50)
-    algorithm: str = Field(default="SHA-256", min_length=1, max_length=32)
+    algorithm: Literal["SHA-256"] = "SHA-256"
 
     @field_validator("hashes", mode="before")
     @classmethod
@@ -224,8 +224,8 @@ class AssetLookupRequest(PayloadModel):
     @classmethod
     def require_hex_hashes(cls, value: list[str]) -> list[str]:
         for hash_value in value:
-            if not re.fullmatch(r"[0-9a-fA-F]{16,128}", hash_value):
-                raise ValueError("hashes must be hex strings 16-128 characters long")
+            if not re.fullmatch(SHA256_PATTERN, hash_value):
+                raise ValueError("hashes must be 64-character SHA-256 hex digests")
         return [hash_value.lower() for hash_value in value]
 
     @field_validator("algorithm", mode="before")

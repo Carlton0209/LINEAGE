@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: lineage
       POSTGRES_PASSWORD: lineage
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -30,7 +30,7 @@ services:
       LINEAGE_KEY_ID: ${LINEAGE_KEY_ID:-lineage-local-dev-key-001}
       LINEAGE_ED25519_PRIVATE_KEY_B64URL: ${LINEAGE_ED25519_PRIVATE_KEY_B64URL:-zuecN0CTFU2KMXBastCGn103EQbyjze6oHwUlgv4Chg}
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -64,7 +64,7 @@ services:
     environment:
       NEXT_PUBLIC_API_URL: http://api:8000
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       seed:
         condition: service_completed_successfully

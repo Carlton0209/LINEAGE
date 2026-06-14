@@ -1,6 +1,6 @@
 # LINEAGE Progress
 
-Last updated: 2026-06-08
+Last updated: 2026-06-14
 
 ## Baseline
 
@@ -12,6 +12,61 @@ Last updated: 2026-06-08
   `apps/web/components/axion-homepage.tsx`, and `apps/web/public/`.
 
 ## Completed
+
+### Local demo network exposure hardening
+
+- Goal: prevent the one-command Docker Compose demo from exposing its database,
+  API, and web ports to other hosts on the local network by default.
+- Scope: host port bindings in `docker-compose.yml` and a focused Compose
+  configuration regression test.
+- Acceptance: every published demo port binds only to `127.0.0.1`, while the
+  existing localhost URLs and container-to-container networking remain unchanged.
+- Result: Postgres `5432`, API `8000`, and web `3000` now publish only on the
+  loopback interface; the regression parses the Compose YAML and locks that
+  contract for all services with published ports.
+- Validation: targeted config tests, full API pytest suite, API Ruff, manifest
+  schema validation, and `git diff --check` passed.
+- Gap: the Compose stack was not started because this machine does not have
+  `docker`, `podman`, `nerdctl`, or `colima` on `PATH`.
+
+### Asset lookup hash boundary hardening
+
+- Goal: keep `POST /assets/lookup` aligned with signed manifest hash semantics
+  so malformed or unsupported digest queries cannot reach database lookup work.
+- Scope: asset lookup request schema and focused API regression tests.
+- Acceptance: lookup hashes must be exact 64-character SHA-256 hex digests,
+  unsupported algorithms return `HTTP 422` before query execution, and valid
+  SHA-256 lookups still work case-insensitively.
+- Result: `AssetLookupRequest` now reuses the shared `SHA256_PATTERN` boundary
+  and constrains `algorithm` to the manifest-supported `SHA-256` literal.
+- Validation: targeted asset lookup tests, full API pytest suite, API Ruff,
+  manifest schema validation, and `git diff --check` passed.
+
+### Event list filter boundary hardening
+
+- Goal: prevent `GET /events` optional filters from accepting values that cannot
+  match valid stored event records or can force oversized query predicates.
+- Scope: FastAPI event-list query parameters and focused route regression tests.
+- Acceptance: invalid `tool`, overlong `asset`, and unknown `asset_type` filters
+  return `HTTP 422` before database query execution; valid filters still list events.
+- Result: `tool` now reuses `TOOL_ID_PATTERN`, `asset` has the same 1000-character
+  boundary as stored output asset URLs, and `asset_type` is constrained to the
+  manifest asset-type enum.
+- Validation: targeted event payload tests, full API pytest suite, API Ruff,
+  manifest schema validation, and `git diff --check` passed.
+
+### Event asset filter wildcard hardening on integration demo
+
+- Goal: prevent `GET /events?asset=...` from treating user-supplied `%` and `_`
+  as SQL `LIKE` wildcards on the active `integration-demo` branch.
+- Scope: FastAPI event listing filter and focused SQL compilation regression test.
+- Acceptance: asset filter input containing wildcard characters is matched
+  literally, generated PostgreSQL SQL uses `ESCAPE`, and existing API validation
+  remains green.
+- Result: `AIEvent.output_asset_url.contains(asset, autoescape=True)` now escapes
+  wildcard characters before binding the query value.
+- Validation: targeted event payload tests, full API pytest suite, API Ruff,
+  manifest schema validation, and `git diff --check` passed.
 
 ### Deployment verification and commit-message guardrails
 
