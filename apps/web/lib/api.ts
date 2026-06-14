@@ -1,4 +1,4 @@
-export type AIEvent = {
+export type EventRead = {
   event_id: string;
   project_id: string;
   occurred_at: string;
@@ -15,10 +15,12 @@ export type AIEvent = {
   created_at: string;
 };
 
+export type AIEvent = EventRead;
+
 export type EventListResponse = {
   project_id: string;
   count: number;
-  events: AIEvent[];
+  events: EventRead[];
 };
 
 export type EventFilters = {
@@ -45,6 +47,16 @@ export type VerificationResult =
       digestAlgorithm: string;
     }
   | { valid: false; reason: string };
+
+export type AssetLookupResult = {
+  hash: string;
+  matched: boolean;
+  events: EventRead[];
+};
+
+export type InspectHashResult =
+  | { ok: true; result: AssetLookupResult }
+  | { ok: false; reason: string };
 
 const LOCAL_API_PROTOCOL = "http";
 const LOCAL_API_HOST = "localhost";
@@ -132,4 +144,15 @@ export async function verifyManifest(rawJson: string): Promise<VerificationResul
   });
 
   return (await response.json()) as VerificationResult;
+}
+
+export async function inspectHash(hash: string): Promise<InspectHashResult> {
+  const response = await fetch("/api/inspect", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ hash }),
+    cache: "no-store"
+  });
+
+  return (await response.json()) as InspectHashResult;
 }

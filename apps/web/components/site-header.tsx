@@ -12,10 +12,11 @@ type SiteHeaderProps = {
   actions?: ReactNode;
 };
 
-const navItems = [
-  { href: "/", label: "Ledger" },
+const navItems: Array<{ href: string; label: string; external?: boolean }> = [
+  { href: "/", label: "Home" },
+  { href: "/ledger", label: "Ledger" },
   { href: "/verify", label: "Verify" },
-  { href: "https://lineage.dev/docs", label: "Docs", external: true }
+  { href: "/inspect", label: "Inspect" }
 ];
 
 function isActivePath(pathname: string, href: string) {
@@ -42,7 +43,7 @@ function LedgerCta({ className = "" }: { className?: string }) {
         "group inline-flex items-center rounded-full bg-ink py-2 pl-5 pr-2 text-[13px] font-medium text-white transition-colors duration-300 hover:bg-[#222]",
         className
       )}
-      href="/"
+      href="/ledger"
     >
       <TextRoll label="Open the ledger" />
       <span className="ml-3 flex h-6 w-6 items-center justify-center rounded-full bg-white text-ink transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
