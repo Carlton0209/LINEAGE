@@ -7,49 +7,50 @@ export const EXAMPLE_MANIFEST_JSON = `{
   ],
   "type": "LineageAIBillOfMaterials",
   "schemaVersion": "0.1.0",
-  "manifestId": "urn:lineage:manifest:prj_week_zero_cut_001",
+  "manifestId": "urn:lineage:manifest:prj_verify_example:20260615T120500Z",
   "project": {
-    "id": "prj_week_zero",
-    "name": "Week Zero Runway Capture"
+    "id": "prj_verify_example",
+    "name": "prj_verify_example"
   },
-  "generatedAt": "2026-05-20T14:25:00Z",
+  "generatedAt": "2026-06-15T12:05:00Z",
   "issuer": {
-    "id": "lineage-local-dev",
-    "name": "LINEAGE Local Development Issuer",
-    "url": "https://lineage.dev"
+    "id": "lineage-example",
+    "name": "LINEAGE Verification Example",
+    "url": "https://lineage-puce.vercel.app"
   },
   "events": [
     {
-      "eventId": "evt_runway0001",
-      "timestamp": "2026-05-20T14:20:30Z",
-      "projectId": "prj_week_zero",
+      "eventId": "evt_example0001",
+      "timestamp": "2026-06-15T12:00:00Z",
+      "projectId": "prj_verify_example",
       "tool": {
         "identifier": "runway-ml",
+        "version": "1.0",
         "url": "https://app.runwayml.com"
       },
       "model": {
-        "identifier": "gen-3-alpha"
+        "identifier": "gen-4"
       },
       "input": {
-        "promptText": "A locked-off shot of rain sliding down a neon storefront window at night.",
+        "promptText": "A sunrise over a quiet coastal city, filmed as a slow aerial shot.",
+        "referenceAssets": [],
         "parameters": {
-          "durationSeconds": 10,
-          "aspectRatio": "16:9"
-        },
-        "referenceAssets": []
+          "durationSeconds": 10
+        }
       },
       "output": {
-        "assetUrl": "https://assets.example.com/week-zero/runway-0001.mp4",
+        "assetUrl": "https://assets.example.com/verify-example.mp4",
         "assetHash": {
           "algorithm": "SHA-256",
           "value": "b1c25a5e0b182f6c0ad84c35e8b5273f470e529bf7f1d3a3c2f9a6b7c8d9e0f1"
         },
         "assetType": "video",
         "mimeType": "video/mp4",
-        "durationSeconds": 10
+        "durationSeconds": 10.0
       },
       "operator": {
-        "userId": "user_local_001"
+        "userId": "user_example",
+        "humanName": "Example Operator"
       },
       "provenance": {
         "parentEventIds": []
@@ -68,29 +69,29 @@ export const EXAMPLE_MANIFEST_JSON = `{
     "actions": [
       {
         "action": "c2pa.created",
-        "when": "2026-05-20T14:20:30Z",
-        "softwareAgent": "Runway ML gen-3-alpha",
-        "lineageEventId": "evt_runway0001"
+        "when": "2026-06-15T12:00:00Z",
+        "softwareAgent": "runway-ml gen-4",
+        "lineageEventId": "evt_example0001"
       }
     ]
   },
   "signature": {
     "type": "LineageEd25519Signature2026",
-    "createdAt": "2026-05-20T14:25:00Z",
+    "createdAt": "2026-06-15T12:05:00Z",
     "algorithm": "Ed25519",
     "encoding": "base64url",
     "publicKey": {
-      "kid": "lineage-local-dev-key-001",
+      "kid": "lineage-example-key-001",
       "kty": "OKP",
       "crv": "Ed25519",
-      "x": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+      "x": "O2onvM62pC1io6jQKm8Nc2UyFXcd4kOmOsBIoYtZ2ik"
     },
     "signedPayload": "canonical-json-without-signature",
     "digest": {
       "algorithm": "SHA-256",
-      "value": "0000000000000000000000000000000000000000000000000000000000000000"
+      "value": "bad1ca50e33211560a6c9006542ec652a06f0fbda90e25aa23a36ba8904c2b31"
     },
-    "signatureValue": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "signatureValue": "5zOe2CAGL_HBoQdH3SBrotyOiHryf4fGzIfMPQbp6pqVl2M9rbRQ_XByP-lXyHrO47PdAzd6ES5fX4pJ9HhBAQ",
     "c2pa": {
       "claimSignatureLabel": "c2pa.signature",
       "coseSignatureStructure": "COSE_Sign1_Tagged",

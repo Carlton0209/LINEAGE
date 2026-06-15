@@ -4,7 +4,7 @@ import { useEffect, useState, type DragEvent, type FormEvent } from "react";
 import { ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { EXAMPLE_MANIFEST_JSON } from "@/lib/example-manifest";
-import { apiBaseUrl, verifyManifest, type VerificationResult } from "@/lib/api";
+import { verifyManifest, type VerificationResult } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,10 @@ function formatGeneratedAt(value: string) {
 }
 
 function readableReason(reason: string) {
-  return reasonCopy[reason] ?? reason;
+  const normalizedReason = reason.trim();
+  return normalizedReason
+    ? reasonCopy[normalizedReason] ?? normalizedReason
+    : "The signature does not match the public key embedded in this manifest.";
 }
 
 function BackgroundOrnament() {
@@ -263,7 +266,6 @@ export default function VerifyPage() {
   }, []);
 
   const canVerify = manifestJson.trim().length > 0 && !isVerifying;
-  const manifestCurlCommand = `curl -X POST ${apiBaseUrl()}/manifest/prj_demo_feature`;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -399,11 +401,7 @@ export default function VerifyPage() {
 
               {exampleLoaded ? (
                 <p className="mt-3 text-xs italic text-ink-muted">
-                  This example uses a placeholder signature so the result will be
-                  &apos;cannot be verified.&apos; To see a passing verification, generate a manifest
-                  from the API:{" "}
-                  <code className="font-mono">{manifestCurlCommand}</code>{" "}
-                  and paste the output here.
+                  This is a valid signed sample. Verify it to see the successful result state.
                 </p>
               ) : null}
 
@@ -416,7 +414,7 @@ export default function VerifyPage() {
                   onClick={handleTryExample}
                   type="button"
                 >
-                  Try an example
+                  Try a signed example
                 </button>
                 {manifestJson ? (
                   <button
