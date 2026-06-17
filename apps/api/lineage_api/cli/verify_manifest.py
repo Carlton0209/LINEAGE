@@ -18,11 +18,11 @@ def main() -> None:
         print(f"invalid: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
 
-    if not result["valid"]:
-        print(f"invalid: {result['reason']}", file=sys.stderr)
+    if result["overall"]["status"] == "failed":
+        print(result["overall"]["summary"], file=sys.stderr)
         raise SystemExit(1)
 
-    print("valid")
+    print(result["overall"]["status"])
 
 
 if __name__ == "__main__":

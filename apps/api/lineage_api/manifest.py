@@ -13,7 +13,15 @@ from lineage_api.crypto import (
 )
 from lineage_api.models import AIEvent
 
-SCHEMA_VERSION = "0.1.0"
+SCHEMA_VERSION = "0.2.0"
+PROJECT_METADATA_FIELDS = (
+    "title",
+    "productionCompany",
+    "deliveryTarget",
+    "periodStart",
+    "periodEnd",
+)
+EVENT_METADATA_FIELDS = ("assetType", "rights", "consent", "disclosure")
 
 
 def isoformat_z(value: datetime) -> str:
@@ -65,7 +73,7 @@ def event_to_manifest_event(event: AIEvent) -> dict[str, Any]:
     if event.operator_human_name:
         operator["humanName"] = event.operator_human_name
 
-    return {
+    manifest_event = {
         "eventId": event.event_id,
         "timestamp": isoformat_z(event.occurred_at),
         "projectId": event.project_id,
@@ -78,6 +86,26 @@ def event_to_manifest_event(event: AIEvent) -> dict[str, Any]:
             "parentEventIds": event.parent_event_ids,
         },
     }
+    for field in EVENT_METADATA_FIELDS:
+        value = event.raw_event.get(field) if isinstance(event.raw_event, dict) else None
+        if value:
+            manifest_event[field] = value
+    return manifest_event
+
+
+def project_metadata_from_events(events: list[AIEvent]) -> dict[str, Any]:
+    for event in events:
+        if not isinstance(event.raw_event, dict):
+            continue
+        project = event.raw_event.get("project")
+        if not isinstance(project, dict):
+            continue
+        return {
+            field: project[field]
+            for field in PROJECT_METADATA_FIELDS
+            if isinstance(project.get(field), str) and project[field]
+        }
+    return {}
 
 
 def build_unsigned_manifest(
@@ -97,9 +125,17 @@ def build_unsigned_manifest(
     if settings.issuer_url:
         issuer["url"] = settings.issuer_url
 
+    project: dict[str, Any] = {
+        "id": project_id,
+        "name": project_id,
+    }
+    project.update(project_metadata_from_events(sorted_events))
+    if project.get("title"):
+        project["name"] = project["title"]
+
     return {
         "@context": [
-            "https://lineage.dev/contexts/ai-bom/v0.1",
+            "https://lineage.dev/contexts/ai-bom/v0.2",
             {
                 "c2pa": (
                     "https://c2pa.org/specifications/specifications/2.1/"
@@ -110,10 +146,7 @@ def build_unsigned_manifest(
         "type": "LineageAIBillOfMaterials",
         "schemaVersion": SCHEMA_VERSION,
         "manifestId": f"urn:lineage:manifest:{project_id}:{generated_at.strftime('%Y%m%dT%H%M%SZ')}",
-        "project": {
-            "id": project_id,
-            "name": project_id,
-        },
+        "project": project,
         "generatedAt": isoformat_z(generated_at),
         "issuer": issuer,
         "events": manifest_events,

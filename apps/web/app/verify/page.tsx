@@ -4,34 +4,15 @@ import { useEffect, useState, type DragEvent, type FormEvent } from "react";
 import { ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { EXAMPLE_MANIFEST_JSON } from "@/lib/example-manifest";
-import { verifyManifest, type VerificationResult } from "@/lib/api";
+import {
+  verificationReportFromIssue,
+  verifyManifest,
+  type VerificationReport,
+  type VerificationStage
+} from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-
-const reasonCopy: Record<string, string> = {
-  "manifest is missing signature block": "The manifest has no signature block.",
-  "manifest digest does not match canonical unsigned payload":
-    "The manifest content does not match the digest recorded in the signature.",
-  "signature publicKey must be an Ed25519 OKP JWK":
-    "The public key is not in the expected Ed25519 format.",
-  "signature block is missing public key or signature value": "The signature block is incomplete."
-};
-
-function formatGeneratedAt(value: string) {
-  return `${new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "UTC"
-  }).format(new Date(value))} UTC`;
-}
-
-function readableReason(reason: string) {
-  const normalizedReason = reason.trim();
-  return normalizedReason
-    ? reasonCopy[normalizedReason] ?? normalizedReason
-    : "The signature does not match the public key embedded in this manifest.";
-}
 
 function BackgroundOrnament() {
   return <div className="background-ornament" />;
@@ -93,7 +74,9 @@ function ArrowPillButton({
       onClick={onClick}
       type={type}
     >
-      {isLoading ? <span className="mr-2 h-1.5 w-1.5 animate-pulse rounded-full bg-accent" /> : null}
+      {isLoading ? (
+        <span className="mr-2 h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+      ) : null}
       <TextRoll label={label} />
       <span
         className={cn(
@@ -109,7 +92,11 @@ function ArrowPillButton({
 
 function StarburstIcon() {
   return (
-    <svg className="h-5 w-5 fill-current text-accent sm:h-6 sm:w-6" viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className="h-5 w-5 fill-current text-accent sm:h-6 sm:w-6"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <path d="M12 1.5l2.1 6.1 6.4-2.1-3.5 5.7 5.5 3.8-6.7.6.6 6.9-4.4-5.2-4.4 5.2.6-6.9-6.7-.6 5.5-3.8-3.5-5.7 6.4 2.1L12 1.5z" />
     </svg>
   );
@@ -127,27 +114,83 @@ function TrustBadge() {
   );
 }
 
-function SummaryRow({
-  label,
-  value,
-  mono = false
-}: {
-  label: string;
-  value: string | number;
-  mono?: boolean;
-}) {
+function projectLine(project: VerificationReport["project"]) {
+  if (!project) {
+    return "Project not identified";
+  }
+
+  return [project.title || project.id, project.productionCompany, project.deliveryTarget]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function overallDotClass(status: VerificationReport["overall"]["status"]) {
+  return status === "verified" ? "bg-accent" : "bg-accentDeep";
+}
+
+function stageDotClass(stage: VerificationStage) {
+  if (stage.status === "verified" || stage.status === "informational") {
+    return "bg-accent";
+  }
+  return "bg-accentDeep";
+}
+
+function stageStatusWord(stage: VerificationStage) {
+  if (stage.id === "structure" && stage.status === "failed") {
+    return "Malformed";
+  }
+  if (stage.id === "integrity" && stage.status === "failed") {
+    return "Tampered";
+  }
+  if (stage.id === "issuer") {
+    return "Identified";
+  }
+  if (stage.id === "asset_match" && stage.status === "informational") {
+    return "Skipped";
+  }
+  if (stage.status === "attention" || stage.status === "failed") {
+    return "Attention";
+  }
+  if (stage.status === "informational") {
+    return "Skipped";
+  }
+  return "Verified";
+}
+
+function StageRow({ stage }: { stage: VerificationStage }) {
   return (
-    <>
-      <dt className="text-[13px] font-medium text-ink-muted">{label}</dt>
-      <dd
-        className={cn(
-          "text-[13px] text-ink",
-          mono ? "break-all font-mono text-[12px]" : null
-        )}
-      >
-        {value}
-      </dd>
-    </>
+    <div className="grid gap-3 border-b border-ink-rule py-5 last:border-b-0 sm:grid-cols-[170px_112px_1fr] sm:gap-5">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className={cn("h-3 w-3 shrink-0 rounded-full", stageDotClass(stage))} />
+        <p className="min-w-0 text-[14px] font-medium text-ink">{stage.name}</p>
+      </div>
+      <p className="text-[13px] font-medium text-ink">{stageStatusWord(stage)}</p>
+      <div className="min-w-0">
+        <p className="break-words text-[13px] leading-[1.55] text-ink-muted">{stage.detail}</p>
+        {stage.findings.length > 0 ? (
+          <ul className="mt-3 space-y-2">
+            {stage.findings.map((finding, index) => (
+              <li
+                className="grid grid-cols-1 gap-1 rounded-md bg-cream-soft px-3 py-2 text-[12px] leading-[1.45] sm:grid-cols-[minmax(120px,180px)_1fr] sm:gap-3"
+                key={`${stage.id}-${finding.eventId}-${finding.message}-${index}`}
+              >
+                <span className="break-all font-mono text-[11px] text-ink">
+                  {finding.eventId}
+                </span>
+                <span
+                  className={cn(
+                    "text-ink",
+                    finding.level === "informational" ? "text-ink-muted" : null
+                  )}
+                >
+                  {finding.message}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -156,7 +199,7 @@ function ResultPanel({
   result
 }: {
   idlePulse: boolean;
-  result: VerificationResult | null;
+  result: VerificationReport | null;
 }) {
   return (
     <section className="relative z-10 mx-auto w-full max-w-[1440px] px-5 pb-20 sm:px-8 lg:px-12">
@@ -175,48 +218,67 @@ function ResultPanel({
             />
             <p className="mt-6 text-base font-medium text-ink">Paste a manifest to begin.</p>
             <p className="mt-2 max-w-[460px] text-center text-[13px] text-ink-muted">
-              The result will appear here. Verification runs against the public key embedded in the
-              signature block.
+              The staged report will appear here. Verification runs against the public key embedded
+              in the signature block.
             </p>
           </div>
-        ) : result.valid ? (
-          <div className="grid grid-cols-1 items-start gap-6 transition-opacity duration-300 sm:grid-cols-[auto_1fr] sm:gap-10">
-            <div>
-              <span className="block h-12 w-12 rounded-full bg-accent" />
-              <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-cream-soft px-3 py-1 text-[11px] font-medium text-ink">
-                Signed
-              </span>
-            </div>
-            <div>
-              <h2 className="text-[22px] font-medium leading-6 text-ink">This manifest verifies.</h2>
-              <dl className="mt-5 grid grid-cols-[150px_1fr] gap-x-4 gap-y-3 text-[13px]">
-                <SummaryRow label="Manifest ID" value={result.manifestId} mono />
-                <SummaryRow label="Project" value={result.projectId} />
-                <SummaryRow label="Generated" value={formatGeneratedAt(result.generatedAt)} />
-                <SummaryRow label="Events" value={result.eventCount} />
-                <SummaryRow label="Key fingerprint" value={result.publicKeyFingerprint} mono />
-                <SummaryRow label="Digest" value={result.digestAlgorithm} />
-              </dl>
-              <p className="mt-6 border-t border-ink-rule pt-6 text-[12px] text-ink-muted">
-                The signature was checked against the public key inside the manifest. Confirm the
-                fingerprint with the issuer through a second channel to validate the key itself.
-              </p>
-            </div>
-          </div>
         ) : (
-          <div className="grid grid-cols-1 items-start gap-6 transition-opacity duration-300 sm:grid-cols-[auto_1fr] sm:gap-10">
-            <span className="block h-12 w-12 rounded-full bg-accentDeep" />
-            <div>
-              <h2 className="text-[22px] font-medium leading-6 text-ink">
-                This manifest cannot be verified.
-              </h2>
-              <p className="mt-4 max-w-[640px] text-[15px] leading-[1.55] text-ink">
-                {readableReason(result.reason)}
+          <div className="transition-opacity duration-300">
+            <div className="grid grid-cols-1 gap-5 border-b border-ink-rule pb-6 sm:grid-cols-[auto_1fr] sm:gap-8">
+              <span
+                className={cn(
+                  "block h-12 w-12 rounded-full",
+                  overallDotClass(result.overall.status)
+                )}
+              />
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink-muted">
+                  Overall verdict
+                </p>
+                <h2 className="mt-2 text-[22px] font-medium leading-7 text-ink">
+                  {result.overall.summary}
+                </h2>
+                <p className="mt-3 text-[14px] leading-[1.55] text-ink-muted">
+                  {projectLine(result.project)}
+                </p>
+              </div>
+            </div>
+
+            <div className="py-4">
+              {result.stages.map((stage) => (
+                <StageRow key={stage.id} stage={stage} />
+              ))}
+            </div>
+
+            <div className="border-t border-ink-rule pt-6">
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink-muted">
+                Disclosure summary
               </p>
-              <p className="mt-6 border-t border-ink-rule pt-6 text-[12px] text-ink-muted">
-                An unverified manifest may still be authentic — it could have been edited by a tool
-                that did not re-sign it. Ask the issuer for a fresh signed copy.
-              </p>
+              {result.disclosure.length ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {result.disclosure.map((item) => (
+                    <span
+                      className="inline-flex max-w-full items-center gap-2 rounded-full border border-ink-rule bg-cream-soft px-3 py-1.5 text-[12px] text-ink"
+                      key={item.category}
+                    >
+                      <span
+                        className={cn(
+                          "h-2 w-2 shrink-0 rounded-full",
+                          item.status === "verified" ? "bg-accent" : "bg-accentDeep"
+                        )}
+                      />
+                      <span className="truncate">{item.category}</span>
+                      <span className="text-ink-muted">
+                        {item.status === "verified" ? "verified" : "attention"}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-3 text-[13px] text-ink-muted">
+                  No disclosure categories were identified in the manifest.
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -252,7 +314,7 @@ function CheckList({
 
 export default function VerifyPage() {
   const [manifestJson, setManifestJson] = useState("");
-  const [result, setResult] = useState<VerificationResult | null>(null);
+  const [result, setResult] = useState<VerificationReport | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [exampleLoaded, setExampleLoaded] = useState(false);
@@ -277,13 +339,14 @@ export default function VerifyPage() {
     try {
       setResult(await verifyManifest(manifestJson));
     } catch (error) {
-      setResult({
-        valid: false,
-        reason:
+      setResult(
+        verificationReportFromIssue(
+          "Verifier service could not be reached.",
           error instanceof Error
-            ? `Verifier service is unreachable: ${error.message}.`
-            : "Verifier service is unreachable."
-      });
+            ? `could not run - verifier service is unreachable: ${error.message}`
+            : "could not run - verifier service is unreachable"
+        )
+      );
     } finally {
       setIsVerifying(false);
     }
@@ -340,7 +403,7 @@ export default function VerifyPage() {
 
       <section className="relative z-10 mx-auto w-full max-w-[1440px] px-5 pb-8 pt-10 sm:px-8 sm:pt-16 lg:px-12 lg:pt-24">
         <SectionEyebrow number="01" label="Independent verification" />
-        <h1 className="font-heading text-[clamp(2rem,7vw,4.4rem)] font-medium leading-[1.05] tracking-[-0.03em] text-ink sm:text-[clamp(2.5rem,5vw,4.4rem)]">
+        <h1 className="font-heading text-[clamp(2rem,7vw,4.4rem)] font-medium leading-[1.05] text-ink sm:text-[clamp(2.5rem,5vw,4.4rem)]">
           Verify a LINEAGE manifest. <br className="hidden sm:block" />
           Confirm what AI touched the work, <br className="hidden sm:block" />
           and that <span className="text-accent">nothing has been altered.</span>
@@ -401,7 +464,7 @@ export default function VerifyPage() {
 
               {exampleLoaded ? (
                 <p className="mt-3 text-xs italic text-ink-muted">
-                  This is a valid signed sample. Verify it to see the successful result state.
+                  This signed sample verifies and includes follow-up items.
                 </p>
               ) : null}
 
@@ -434,9 +497,9 @@ export default function VerifyPage() {
               </p>
               <CheckList
                 items={[
+                  "Structure, integrity, issuer fingerprint, provenance, completeness, and asset match.",
                   "The signature was produced by the private key matching the public key in the manifest.",
-                  "The manifest content has not changed since signing.",
-                  "The signature uses Ed25519 with C2PA 2.1-compatible encoding."
+                  "The derivation graph and disclosure categories are returned in one report."
                 ]}
               />
               <div className="mt-6 border-t border-ink-rule pt-6">
@@ -447,7 +510,7 @@ export default function VerifyPage() {
                   muted
                   items={[
                     "Whether the issuing party is who they claim to be. Confirm the public key fingerprint with the issuer separately.",
-                    "Whether the AI usage itself was permitted by relevant contracts. That is a human judgment."
+                    "Whether each follow-up item has been cleared by the buyer or production team."
                   ]}
                 />
               </div>

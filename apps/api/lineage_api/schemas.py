@@ -5,12 +5,14 @@ from typing import Any, Literal
 from urllib.parse import urlparse
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from lineage_api.models import AIEvent
 
 
 AssetType = Literal["image", "video", "audio", "text"]
+CommercialUse = Literal["permitted", "restricted", "unknown"]
+TrainingDataBasis = Literal["licensed", "vendor-indemnified", "unknown"]
 ReferenceRelationship = Literal[
     "input",
     "style-reference",
@@ -85,6 +87,24 @@ class ReferenceAssetPayload(PayloadModel):
         return _require_absolute_uri(value)
 
 
+class RightsPayload(PayloadModel):
+    commercialUse: CommercialUse
+    outputLicense: str = Field(min_length=1, max_length=200)
+    trainingDataBasis: TrainingDataBasis
+
+
+class ConsentPayload(PayloadModel):
+    consentId: str = Field(min_length=1, max_length=160)
+    subject: str = Field(min_length=1, max_length=200)
+    scope: str = Field(min_length=1, max_length=500)
+    guildReference: str = Field(min_length=1, max_length=200)
+
+
+class DisclosurePayload(PayloadModel):
+    category: str = Field(min_length=1, max_length=160)
+    buyerProfile: str = Field(min_length=1, max_length=160)
+
+
 class EventInputPayload(PayloadModel):
     promptText: str = Field(min_length=1, max_length=20000)
     negativePromptText: str | None = Field(default=None, max_length=20000)
@@ -107,7 +127,7 @@ class EventInputPayload(PayloadModel):
 class EventOutputPayload(PayloadModel):
     assetUrl: str = Field(min_length=1, max_length=1000)
     assetHash: HashDigest
-    assetType: AssetType
+    assetType: AssetType | None = None
     mimeType: str | None = Field(default=None, pattern=MIME_TYPE_PATTERN)
     durationSeconds: float | None = Field(default=None, gt=0)
 
@@ -142,12 +162,16 @@ class EventCreate(PayloadModel):
     eventId: str | None = Field(default=None, pattern=EVENT_ID_PATTERN)
     timestamp: datetime
     projectId: str = Field(pattern=PROJECT_ID_PATTERN)
+    assetType: AssetType | None = None
     tool: ToolPayload
     model: ModelPayload
     input: EventInputPayload
     output: EventOutputPayload
     operator: OperatorPayload
     provenance: ProvenancePayload = Field(default_factory=ProvenancePayload)
+    rights: RightsPayload | None = None
+    consent: ConsentPayload | None = None
+    disclosure: DisclosurePayload | None = None
 
     @field_validator("timestamp")
     @classmethod
@@ -156,8 +180,20 @@ class EventCreate(PayloadModel):
             raise ValueError("timestamp must include a timezone")
         return value
 
+    @model_validator(mode="after")
+    def require_asset_type(self) -> "EventCreate":
+        if self.output.assetType is None and self.assetType is None:
+            raise ValueError("assetType must be provided either on the event or output")
+        if self.output.assetType is not None and self.assetType is not None:
+            if self.output.assetType != self.assetType:
+                raise ValueError("event assetType must match output.assetType")
+        return self
+
     def to_model(self) -> AIEvent:
         event_id = self.eventId or f"evt_{uuid4().hex}"
+        output_asset_type = self.output.assetType or self.assetType
+        if output_asset_type is None:
+            raise ValueError("assetType must be provided either on the event or output")
         return AIEvent(
             event_id=event_id,
             project_id=self.projectId,
@@ -172,7 +208,7 @@ class EventCreate(PayloadModel):
             output_asset_url=self.output.assetUrl,
             output_asset_hash_algorithm=self.output.assetHash.algorithm,
             output_asset_hash_value=self.output.assetHash.value,
-            output_asset_type=self.output.assetType,
+            output_asset_type=output_asset_type,
             output_mime_type=self.output.mimeType,
             output_duration_seconds=self.output.durationSeconds,
             operator_user_id=self.operator.userId,

@@ -1,17 +1,22 @@
 {
   "@context": [
-    "https://lineage.dev/contexts/ai-bom/v0.1",
+    "https://lineage.dev/contexts/ai-bom/v0.2",
     "https://schema.org",
     {
       "c2pa": "https://c2pa.org/specifications/specifications/2.1/specs/C2PA_Specification.html#"
     }
   ],
   "type": "LineageAIBillOfMaterials",
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "manifestId": "urn:lineage:manifest:prj_week_zero_multi_tool",
   "project": {
     "id": "prj_week_zero",
-    "name": "Week Zero Multi Tool Schema Exercise"
+    "name": "Week Zero Multi Tool Schema Exercise",
+    "title": "Week Zero Multi Tool Schema Exercise",
+    "productionCompany": "Northlight Pictures",
+    "deliveryTarget": "streamer_orig_v3",
+    "periodStart": "2026-05-01",
+    "periodEnd": "2026-05-31"
   },
   "generatedAt": "2026-05-20T20:00:00Z",
   "issuer": {
@@ -23,6 +28,7 @@
       "eventId": "evt_runway0201",
       "timestamp": "2026-05-20T19:20:10Z",
       "projectId": "prj_week_zero",
+      "assetType": "video",
       "tool": {
         "identifier": "runway-ml",
         "url": "https://app.runwayml.com"
@@ -40,7 +46,6 @@
           "algorithm": "SHA-256",
           "value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
         },
-        "assetType": "video",
         "mimeType": "video/mp4",
         "durationSeconds": 6
       },
@@ -49,6 +54,15 @@
       },
       "provenance": {
         "parentEventIds": []
+      },
+      "rights": {
+        "commercialUse": "permitted",
+        "outputLicense": "runway-enterprise",
+        "trainingDataBasis": "vendor-indemnified"
+      },
+      "disclosure": {
+        "category": "ai product plate",
+        "buyerProfile": "streamer_orig_v3"
       }
     },
     {
@@ -96,6 +110,62 @@
         "parentEventIds": [
           "evt_runway0201"
         ]
+      },
+      "rights": {
+        "commercialUse": "permitted",
+        "outputLicense": "sora-enterprise",
+        "trainingDataBasis": "licensed"
+      },
+      "disclosure": {
+        "category": "ai macro insert",
+        "buyerProfile": "streamer_orig_v3"
+      }
+    },
+    {
+      "eventId": "evt_voice0203",
+      "timestamp": "2026-05-20T19:42:18Z",
+      "projectId": "prj_week_zero",
+      "tool": {
+        "identifier": "elevenlabs",
+        "url": "https://elevenlabs.io"
+      },
+      "model": {
+        "identifier": "eleven-v3"
+      },
+      "input": {
+        "promptText": "Generate an approved synthetic voice pickup for the product tagline.",
+        "referenceAssets": []
+      },
+      "output": {
+        "assetUrl": "https://assets.example.com/week-zero/tagline-voice.wav",
+        "assetHash": {
+          "algorithm": "SHA-256",
+          "value": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        "assetType": "audio",
+        "mimeType": "audio/wav",
+        "durationSeconds": 5
+      },
+      "operator": {
+        "userId": "user_local_001"
+      },
+      "provenance": {
+        "parentEventIds": []
+      },
+      "rights": {
+        "commercialUse": "permitted",
+        "outputLicense": "elevenlabs-enterprise",
+        "trainingDataBasis": "vendor-indemnified"
+      },
+      "consent": {
+        "consentId": "cons_sag_001",
+        "subject": "Jordan Lee",
+        "scope": "Synthetic voice product tagline",
+        "guildReference": "SAG-AFTRA-AI-2026-001"
+      },
+      "disclosure": {
+        "category": "synthetic voice",
+        "buyerProfile": "streamer_orig_v3"
       }
     }
   ],
@@ -105,7 +175,7 @@
     "assertionStoreLabel": "c2pa.assertions",
     "claimLabel": "c2pa.claim.v2",
     "claimSignatureLabel": "c2pa.signature",
-    "claimGenerator": "LINEAGE/0.1.0",
+    "claimGenerator": "LINEAGE/0.2.0",
     "signatureAlgorithm": "EdDSA",
     "signaturePayloadMode": "detached",
     "actions": [
@@ -120,6 +190,12 @@
         "when": "2026-05-20T19:31:44Z",
         "softwareAgent": "OpenAI Sora sora-2",
         "lineageEventId": "evt_openai0202"
+      },
+      {
+        "action": "c2pa.created",
+        "when": "2026-05-20T19:42:18Z",
+        "softwareAgent": "ElevenLabs eleven-v3",
+        "lineageEventId": "evt_voice0203"
       }
     ]
   },

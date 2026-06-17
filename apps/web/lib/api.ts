@@ -36,17 +36,38 @@ export type EventFetchResult =
   | { ok: true; data: EventListResponse }
   | { ok: false; error: string; data: EventListResponse };
 
-export type VerificationResult =
-  | {
-      valid: true;
-      manifestId: string;
-      projectId: string;
-      generatedAt: string;
-      eventCount: number;
-      publicKeyFingerprint: string;
-      digestAlgorithm: string;
-    }
-  | { valid: false; reason: string };
+export type VerificationFinding = {
+  eventId: string;
+  level: "attention" | "informational";
+  message: string;
+};
+
+export type VerificationStage = {
+  id: string;
+  name: string;
+  status: "verified" | "attention" | "informational" | "failed";
+  detail: string;
+  findings: VerificationFinding[];
+};
+
+export type VerificationReport = {
+  overall: {
+    status: "verified" | "verified_with_attention" | "failed";
+    summary: string;
+  };
+  project: {
+    id: string;
+    title: string | null;
+    productionCompany: string | null;
+    deliveryTarget: string | null;
+  } | null;
+  issuerFingerprint: string | null;
+  stages: VerificationStage[];
+  disclosure: {
+    category: string;
+    status: "verified" | "attention";
+  }[];
+};
 
 export type AssetLookupResult = {
   hash: string;
@@ -128,11 +149,68 @@ export function manifestDownloadFilename(projectId: string, extension: "json" | 
   return `lineage-${safeProjectId}-manifest.${extension}`;
 }
 
-export async function verifyManifest(rawJson: string): Promise<VerificationResult> {
+export function verificationReportFromIssue(summary: string, detail: string): VerificationReport {
+  return {
+    overall: { status: "failed", summary },
+    project: null,
+    issuerFingerprint: null,
+    stages: [
+      {
+        id: "structure",
+        name: "Structure",
+        status: "failed",
+        detail,
+        findings: []
+      },
+      {
+        id: "integrity",
+        name: "Integrity",
+        status: "informational",
+        detail: "could not run - structure did not produce a manifest",
+        findings: []
+      },
+      {
+        id: "issuer",
+        name: "Issuer",
+        status: "informational",
+        detail:
+          "issuer key could not be identified. LINEAGE does not verify the issuer's real-world identity; confirm the key fingerprint with the issuer through a separate channel.",
+        findings: []
+      },
+      {
+        id: "provenance",
+        name: "Provenance",
+        status: "informational",
+        detail: "could not run - no event graph available",
+        findings: []
+      },
+      {
+        id: "completeness",
+        name: "Completeness",
+        status: "informational",
+        detail: "could not run - no manifest events available",
+        findings: []
+      },
+      {
+        id: "asset_match",
+        name: "Asset Match",
+        status: "informational",
+        detail: "skipped — no files provided",
+        findings: []
+      }
+    ],
+    disclosure: []
+  };
+}
+
+export async function verifyManifest(rawJson: string): Promise<VerificationReport> {
   try {
     JSON.parse(rawJson);
   } catch {
-    return { valid: false, reason: "Pasted text is not valid JSON." };
+    return verificationReportFromIssue(
+      "Manifest could not be read as JSON.",
+      "malformed: pasted text is not valid JSON"
+    );
   }
 
   const response = await fetch("/api/verify", {
@@ -142,7 +220,7 @@ export async function verifyManifest(rawJson: string): Promise<VerificationResul
     cache: "no-store"
   });
 
-  return (await response.json()) as VerificationResult;
+  return (await response.json()) as VerificationReport;
 }
 
 export async function inspectHash(hash: string): Promise<InspectHashResult> {

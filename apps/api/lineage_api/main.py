@@ -163,10 +163,24 @@ async def _bounded_json_object(request: Request) -> dict:
     return manifest
 
 
+def _manifest_verify_payload(payload: dict) -> tuple[dict, list[str] | None]:
+    manifest = payload
+    asset_hashes = None
+
+    if isinstance(payload.get("manifest"), dict):
+        manifest = payload["manifest"]
+        raw_hashes = payload.get("assetHashes")
+        if isinstance(raw_hashes, list):
+            asset_hashes = [item.strip() for item in raw_hashes if isinstance(item, str)]
+
+    return manifest, asset_hashes
+
+
 @app.post("/manifest/verify")
 async def verify_manifest(request: Request) -> dict:
-    manifest = await _bounded_json_object(request)
-    return verification_result(manifest)
+    payload = await _bounded_json_object(request)
+    manifest, asset_hashes = _manifest_verify_payload(payload)
+    return verification_result(manifest, asset_hashes=asset_hashes)
 
 
 def _signed_manifest_for_project(project_id: str, session: Session) -> dict:
