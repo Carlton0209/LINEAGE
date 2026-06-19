@@ -91,6 +91,15 @@ def test_event_payload_maps_to_database_model() -> None:
     assert event.operator_user_id == "user_local_001"
 
 
+def test_event_payload_accepts_top_level_asset_type() -> None:
+    payload = valid_event_payload()
+    payload["assetType"] = payload["output"].pop("assetType")
+
+    event = EventCreate.model_validate(payload).to_model()
+
+    assert event.output_asset_type == "video"
+
+
 def test_event_payload_rejects_invalid_project_id() -> None:
     payload = valid_event_payload()
     payload["projectId"] = "prj_week_zero/../../manifest"

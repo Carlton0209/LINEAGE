@@ -40,7 +40,10 @@
     },
     "schemaVersion": {
       "type": "string",
-      "pattern": "^0\\.1\\.0$"
+      "enum": [
+        "0.1.0",
+        "0.2.0"
+      ]
     },
     "manifestId": {
       "$ref": "#/$defs/manifestId"
@@ -124,6 +127,31 @@
           "minLength": 1,
           "maxLength": 200
         },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "productionCompany": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "deliveryTarget": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "periodStart": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "periodEnd": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
         "externalIds": {
           "description": "Optional delivery, production, or internal project identifiers.",
           "type": "array",
@@ -188,6 +216,38 @@
         "operator",
         "provenance"
       ],
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "assetType": {
+              "$ref": "#/$defs/assetType"
+            }
+          },
+          "required": [
+            "assetType"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "output": {
+              "type": "object",
+              "properties": {
+                "assetType": {
+                  "$ref": "#/$defs/assetType"
+                }
+              },
+              "required": [
+                "assetType"
+              ]
+            }
+          },
+          "required": [
+            "output"
+          ]
+        }
+      ],
       "properties": {
         "eventId": {
           "$ref": "#/$defs/eventId"
@@ -197,6 +257,9 @@
         },
         "projectId": {
           "$ref": "#/$defs/projectId"
+        },
+        "assetType": {
+          "$ref": "#/$defs/assetType"
         },
         "tool": {
           "$ref": "#/$defs/tool"
@@ -215,6 +278,15 @@
         },
         "provenance": {
           "$ref": "#/$defs/provenance"
+        },
+        "rights": {
+          "$ref": "#/$defs/rights"
+        },
+        "consent": {
+          "$ref": "#/$defs/consent"
+        },
+        "disclosure": {
+          "$ref": "#/$defs/disclosure"
         }
       }
     },
@@ -345,8 +417,7 @@
       "additionalProperties": false,
       "required": [
         "assetUrl",
-        "assetHash",
-        "assetType"
+        "assetHash"
       ],
       "properties": {
         "assetUrl": {
@@ -409,6 +480,88 @@
             "$ref": "#/$defs/eventId"
           },
           "uniqueItems": true
+        }
+      }
+    },
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commercialUse",
+        "outputLicense",
+        "trainingDataBasis"
+      ],
+      "properties": {
+        "commercialUse": {
+          "enum": [
+            "permitted",
+            "restricted",
+            "unknown"
+          ]
+        },
+        "outputLicense": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "trainingDataBasis": {
+          "enum": [
+            "licensed",
+            "vendor-indemnified",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "consent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consentId",
+        "subject",
+        "scope",
+        "guildReference"
+      ],
+      "properties": {
+        "consentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "guildReference": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    },
+    "disclosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "buyerProfile"
+      ],
+      "properties": {
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "buyerProfile": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
         }
       }
     },

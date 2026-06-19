@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { apiBaseUrl } from "@/lib/api";
+import { apiBaseUrl, verificationReportFromIssue } from "@/lib/api";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,7 +13,10 @@ async function readBoundedJsonObject(request: Request) {
     if (Number.isFinite(parsedLength) && parsedLength > MAX_VERIFY_MANIFEST_BYTES) {
       return {
         error: NextResponse.json(
-          { valid: false, reason: "Manifest verification payload exceeds 1 MB." },
+          verificationReportFromIssue(
+            "Manifest could not be verified because the payload is too large.",
+            "malformed: manifest verification payload exceeds 1 MB"
+          ),
           { status: 413 }
         )
       };
@@ -24,7 +27,10 @@ async function readBoundedJsonObject(request: Request) {
   if (!reader) {
     return {
       error: NextResponse.json(
-        { valid: false, reason: "Request body must be valid JSON." },
+        verificationReportFromIssue(
+          "Manifest could not be read as JSON.",
+          "malformed: request body must be valid JSON"
+        ),
         { status: 200 }
       )
     };
@@ -43,7 +49,10 @@ async function readBoundedJsonObject(request: Request) {
     if (bytesRead > MAX_VERIFY_MANIFEST_BYTES) {
       return {
         error: NextResponse.json(
-          { valid: false, reason: "Manifest verification payload exceeds 1 MB." },
+          verificationReportFromIssue(
+            "Manifest could not be verified because the payload is too large.",
+            "malformed: manifest verification payload exceeds 1 MB"
+          ),
           { status: 413 }
         )
       };
@@ -66,7 +75,10 @@ async function readBoundedJsonObject(request: Request) {
   } catch {
     return {
       error: NextResponse.json(
-        { valid: false, reason: "Request body must be valid JSON." },
+        verificationReportFromIssue(
+          "Manifest could not be read as JSON.",
+          "malformed: request body must be valid JSON"
+        ),
         { status: 200 }
       )
     };
@@ -75,7 +87,10 @@ async function readBoundedJsonObject(request: Request) {
   if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) {
     return {
       error: NextResponse.json(
-        { valid: false, reason: "Manifest payload must be a JSON object." },
+        verificationReportFromIssue(
+          "Manifest could not be read as a manifest object.",
+          "malformed: manifest payload must be a JSON object"
+        ),
         { status: 200 }
       )
     };
@@ -100,7 +115,10 @@ export async function POST(request: Request) {
 
     if (!upstream.ok) {
       return NextResponse.json(
-        { valid: false, reason: `Verifier service returned ${upstream.status}.` },
+        verificationReportFromIssue(
+          "Verifier service could not run.",
+          `could not run - verifier service returned ${upstream.status}`
+        ),
         { status: 200 }
       );
     }
@@ -109,13 +127,12 @@ export async function POST(request: Request) {
     return NextResponse.json(body, { status: 200 });
   } catch (error) {
     return NextResponse.json(
-      {
-        valid: false,
-        reason:
-          error instanceof Error
-            ? `Verifier service is unreachable: ${error.message}.`
-            : "Verifier service is unreachable."
-      },
+      verificationReportFromIssue(
+        "Verifier service could not be reached.",
+        error instanceof Error
+          ? `could not run - verifier service is unreachable: ${error.message}`
+          : "could not run - verifier service is unreachable"
+      ),
       { status: 200 }
     );
   }

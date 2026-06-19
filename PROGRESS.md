@@ -1,17 +1,52 @@
 # LINEAGE Progress
 
-Last updated: 2026-06-14
+Last updated: 2026-06-17
 
 ## Baseline
 
-- Branch: `codex/deployment-readiness`, created from `main` at `6b8d047`.
-- `PROGRESS.md` was missing on `main`; this file establishes the repo-local progress
-  baseline after user confirmation.
-- Pre-existing local homepage changes are out of scope for this branch:
-  `apps/web/app/globals.css`, `apps/web/app/page.tsx`,
-  `apps/web/components/axion-homepage.tsx`, and `apps/web/public/`.
+- Current branch: `main` at `2236aa7`, tracking `origin/main`.
+- Pre-existing untracked `outputs/` content is outside the security pass and remains
+  untouched.
+- This file originated on `codex/deployment-readiness` and now tracks completed work
+  carried into the mainline.
 
 ## Completed
+
+### Six-stage manifest verification and 0.2.0 production schema
+
+- Goal: replace fragmented `/verify` output with one staged report while extending
+  manifests into a production AI bill of materials that covers rights, consent,
+  disclosure, derivation chains, and buyer delivery context.
+- Scope: manifest JSON Schema 0.2.0, API Pydantic event boundaries, signed-manifest
+  verification, completeness rules, asset-hash match seam, demo seed data, signed
+  Atlas example manifest, Next.js verify proxy types, and `/verify` result rendering.
+- Acceptance: legacy 0.1.0 signed manifests still verify structurally and
+  cryptographically; 0.2.0 manifests can add optional project, rights, consent, and
+  disclosure fields; `assetType` is accepted at either event or output level; HTTP
+  verification outcomes remain `200`; no file upload or PDF export was added.
+- Result: `POST /manifest/verify` now returns one `VerificationReport` with
+  Structure, Integrity, Issuer, Provenance, Completeness, and Asset Match stages;
+  completeness findings are centralized in `completeness_rules.py`; `/verify`
+  renders the unified report with calm attention states and disclosure summary.
+- Validation: manifest schema validation, 24 targeted manifest verifier tests, all
+  57 API tests, API Ruff, production web build, signed-example proxy roundtrip, and
+  `/verify` HTTP load passed on local API `8001` and web `3001`.
+
+### Signed manifest event and reference integrity hardening
+
+- Goal: prevent a cryptographically valid but event-schema-invalid or internally
+  inconsistent manifest from being reported as valid by the shared API/CLI verifier.
+- Scope: signed manifest event validation, event ID uniqueness, parent-event
+  references, C2PA action references, and focused verifier regressions.
+- Acceptance: nested generation parameters, malformed reference assets, unknown event
+  fields, duplicate event IDs, missing/self parent references, and missing/duplicate
+  C2PA action event references are rejected after signature verification, while valid
+  generated manifests continue to verify.
+- Result: the manifest verifier now reuses the authoritative `EventCreate`
+  model for deep event validation and cross-checks manifest-local event references,
+  keeping verification aligned with ingestion rules and the generated C2PA summary.
+- Validation: 20 targeted manifest tests, all 52 API tests, API Ruff, manifest
+  schema validation, and `git diff --check` passed.
 
 ### Buyer-side video inspector
 

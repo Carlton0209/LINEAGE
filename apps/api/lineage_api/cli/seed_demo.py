@@ -14,9 +14,62 @@ OPERATORS = {
     "eli": ("usr_demo_eli", "Eli Parker"),
 }
 
+PROJECT_METADATA = {
+    "prj_demo_feature": {
+        "title": "Harbor Glass",
+        "productionCompany": "Northlight Pictures",
+        "deliveryTarget": "streamer_orig_v3",
+        "periodStart": "2026-06-01",
+        "periodEnd": "2026-06-14",
+    },
+    "prj_demo_ad_spot": {
+        "title": "Luma Bottle Launch",
+        "productionCompany": "Northlight Pictures",
+        "deliveryTarget": "brand_social_2026",
+        "periodStart": "2026-06-03",
+        "periodEnd": "2026-06-13",
+    },
+    "prj_demo_doc": {
+        "title": "Signal Room",
+        "productionCompany": "Northlight Pictures",
+        "deliveryTarget": "documentary_delivery_v2",
+        "periodStart": "2026-06-02",
+        "periodEnd": "2026-06-15",
+    },
+}
+
 
 def sha256_hex() -> str:
     return secrets.token_hex(32)
+
+
+def rights(
+    *,
+    commercial_use: str = "permitted",
+    output_license: str = "runway-enterprise",
+    training_data_basis: str = "vendor-indemnified",
+) -> dict[str, str]:
+    return {
+        "commercialUse": commercial_use,
+        "outputLicense": output_license,
+        "trainingDataBasis": training_data_basis,
+    }
+
+
+def disclosure(category: str, project_id: str) -> dict[str, str]:
+    return {
+        "category": category,
+        "buyerProfile": PROJECT_METADATA[project_id]["deliveryTarget"],
+    }
+
+
+def voice_consent(subject: str) -> dict[str, str]:
+    return {
+        "consentId": "cons_demo_sag_001",
+        "subject": subject,
+        "scope": "Synthetic voice lines for the LINEAGE demo ledger",
+        "guildReference": "SAG-AFTRA-AI-2026-001",
+    }
 
 
 def event(
@@ -38,6 +91,9 @@ def event(
     operator_key: str,
     parameters: dict[str, Any],
     parent_event_ids: list[str] | None = None,
+    rights_info: dict[str, str] | None = None,
+    disclosure_info: dict[str, str] | None = None,
+    consent_info: dict[str, str] | None = None,
 ) -> AIEvent:
     operator_user_id, operator_human_name = OPERATORS[operator_key]
     occurred_at = datetime.now(timezone.utc).replace(microsecond=0) - timedelta(
@@ -45,6 +101,19 @@ def event(
         hours=hour,
     )
     asset_url = f"s3://lineage-demo/{project_id}/{asset_name}"
+
+    raw_event: dict[str, Any] = {
+        "eventId": event_id,
+        "projectId": project_id,
+        "assetUrl": asset_url,
+        "assetType": asset_type,
+        "operator": operator_user_id,
+        "project": PROJECT_METADATA[project_id],
+        "rights": rights_info or rights(),
+        "disclosure": disclosure_info or disclosure("ai generated asset", project_id),
+    }
+    if consent_info:
+        raw_event["consent"] = consent_info
 
     return AIEvent(
         event_id=event_id,
@@ -67,12 +136,7 @@ def event(
         parameters=parameters,
         reference_assets=[],
         parent_event_ids=parent_event_ids or [],
-        raw_event={
-            "eventId": event_id,
-            "projectId": project_id,
-            "assetUrl": asset_url,
-            "operator": operator_user_id,
-        },
+        raw_event=raw_event,
     )
 
 
@@ -86,6 +150,8 @@ def runway_event(
     asset_name: str,
     operator_key: str,
     parent_event_ids: list[str] | None = None,
+    rights_info: dict[str, str] | None = None,
+    disclosure_category: str = "ai video",
 ) -> AIEvent:
     return event(
         event_id=event_id,
@@ -105,6 +171,8 @@ def runway_event(
         operator_key=operator_key,
         parameters={"seconds": 8, "resolution": "1080p", "camera": "cinematic"},
         parent_event_ids=parent_event_ids,
+        rights_info=rights_info or rights(output_license="runway-enterprise"),
+        disclosure_info=disclosure(disclosure_category, project_id),
     )
 
 
@@ -117,6 +185,8 @@ def suno_event(
     prompt_text: str,
     asset_name: str,
     operator_key: str,
+    rights_info: dict[str, str] | None = None,
+    disclosure_category: str = "ai score",
 ) -> AIEvent:
     return event(
         event_id=event_id,
@@ -135,6 +205,42 @@ def suno_event(
         duration_seconds=30.0,
         operator_key=operator_key,
         parameters={"duration": 30, "tempo": "medium", "mix": "broadcast"},
+        rights_info=rights_info or rights(output_license="suno-enterprise"),
+        disclosure_info=disclosure(disclosure_category, project_id),
+    )
+
+
+def voice_event(
+    *,
+    event_id: str,
+    project_id: str,
+    days_ago: int,
+    hour: int,
+    prompt_text: str,
+    asset_name: str,
+    operator_key: str,
+    subject: str,
+) -> AIEvent:
+    return event(
+        event_id=event_id,
+        project_id=project_id,
+        days_ago=days_ago,
+        hour=hour,
+        tool_identifier="elevenlabs",
+        tool_version="2026.05",
+        tool_url="https://elevenlabs.io",
+        model_identifier="eleven-v3",
+        model_version="3.0",
+        prompt_text=prompt_text,
+        asset_name=asset_name,
+        asset_type="audio",
+        mime_type="audio/wav",
+        duration_seconds=12.0,
+        operator_key=operator_key,
+        parameters={"voice": "approved-demo-voice", "delivery": "calm"},
+        rights_info=rights(output_license="elevenlabs-enterprise"),
+        disclosure_info=disclosure("synthetic voice", project_id),
+        consent_info=voice_consent(subject),
     )
 
 
@@ -254,6 +360,12 @@ def demo_events() -> dict[str, list[AIEvent]]:
                 prompt_text="Three-second sonic logo, confident but understated, resolves on a soft bell tone.",
                 asset_name="ad-sonic-logo.wav",
                 operator_key="maya",
+                rights_info=rights(
+                    commercial_use="restricted",
+                    output_license="temp-only",
+                    training_data_basis="unknown",
+                ),
+                disclosure_category="temporary score",
             ),
             runway_event(
                 event_id="evt_demo_ad_packshot_01",
@@ -285,6 +397,16 @@ def demo_events() -> dict[str, list[AIEvent]]:
                 operator_key="maya",
                 parent_event_ids=[doc_chain_parent],
             ),
+            voice_event(
+                event_id="evt_demo_doc_voice_01",
+                project_id="prj_demo_doc",
+                days_ago=7,
+                hour=3,
+                prompt_text="Generate approved synthetic narration pickup for an archival transition.",
+                asset_name="doc-narration-pickup.wav",
+                operator_key="eli",
+                subject="Riley Morgan",
+            ),
             event(
                 event_id="evt_demo_doc_caption_01",
                 project_id="prj_demo_doc",
@@ -302,6 +424,8 @@ def demo_events() -> dict[str, list[AIEvent]]:
                 duration_seconds=None,
                 operator_key="eli",
                 parameters={"format": "lower-third", "style": "neutral"},
+                rights_info=rights(output_license="runway-enterprise"),
+                disclosure_info=disclosure("ai text plate", "prj_demo_doc"),
             ),
         ],
     }
