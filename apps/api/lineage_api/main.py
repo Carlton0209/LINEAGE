@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import datetime
 from typing import Annotated
 
@@ -24,6 +25,7 @@ from lineage_api.schemas import (
     EventListResponse,
     EventRead,
     PROJECT_ID_PATTERN,
+    SHA256_PATTERN,
     TOOL_ID_PATTERN,
 )
 
@@ -163,15 +165,43 @@ async def _bounded_json_object(request: Request) -> dict:
     return manifest
 
 
+def _asset_hashes_from_payload(raw_hashes: object) -> list[str]:
+    if not isinstance(raw_hashes, list):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="assetHashes must be a list of SHA-256 hashes",
+        )
+    if len(raw_hashes) > 50:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="assetHashes cannot contain more than 50 hashes",
+        )
+
+    asset_hashes: list[str] = []
+    for item in raw_hashes:
+        if not isinstance(item, str):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="assetHashes must contain only SHA-256 hash strings",
+            )
+        hash_value = item.strip().lower()
+        if not re.fullmatch(SHA256_PATTERN, hash_value):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="assetHashes must contain 64-character SHA-256 hex digests",
+            )
+        asset_hashes.append(hash_value)
+    return asset_hashes
+
+
 def _manifest_verify_payload(payload: dict) -> tuple[dict, list[str] | None]:
     manifest = payload
     asset_hashes = None
 
     if isinstance(payload.get("manifest"), dict):
         manifest = payload["manifest"]
-        raw_hashes = payload.get("assetHashes")
-        if isinstance(raw_hashes, list):
-            asset_hashes = [item.strip() for item in raw_hashes if isinstance(item, str)]
+        if "assetHashes" in payload:
+            asset_hashes = _asset_hashes_from_payload(payload["assetHashes"])
 
     return manifest, asset_hashes
 

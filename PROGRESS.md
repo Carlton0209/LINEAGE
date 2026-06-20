@@ -4,8 +4,9 @@ Last updated: 2026-06-20
 
 ## Baseline
 
-- Current branch: `codex/unified-verification-workspace` from `main` at
-  `d3c9f7d`, tracking `origin/codex/unified-verification-workspace`.
+- Consolidation target: `main`; unified workspace work is merged locally and
+  assetHashes hardening is being recovered from `stash@{0}` on
+  `chore/harden-assethashes` before final merge back to `main`.
 - Pre-existing untracked `outputs/` content is outside the security pass and remains
   untouched.
 - This file originated on `codex/deployment-readiness` and now tracks completed work
@@ -42,6 +43,22 @@ Last updated: 2026-06-20
   `/verify?project=prj_demo_feature`, production redirect checks, production
   `/api/events?project_id=prj_demo_feature`, production manifest generation, and
   production `/api/verify` staged-report roundtrip passed.
+
+### Manifest verify asset hash boundary hardening
+
+- Goal: prevent malformed or excessive `assetHashes` values in the wrapped
+  `POST /manifest/verify` payload from reaching the staged verifier's Asset Match
+  report.
+- Scope: FastAPI verify wrapper parsing and focused manifest endpoint regressions.
+- Acceptance: `assetHashes` is optional, but when present must be a list of at most
+  50 exact 64-character SHA-256 hex digests; invalid values return `HTTP 422`
+  before `verification_result()` runs; valid wrapped manifests still produce the
+  staged asset-match report.
+- Result: `/manifest/verify` now normalizes wrapped asset hashes with the same
+  digest boundary used elsewhere instead of silently dropping non-string entries or
+  reporting arbitrary strings as asset-match findings.
+- Validation: targeted manifest signing tests, all 61 API tests, API Ruff, manifest
+  schema validation, and `git diff --check` passed.
 
 ### Six-stage manifest verification and 0.2.0 production schema
 
