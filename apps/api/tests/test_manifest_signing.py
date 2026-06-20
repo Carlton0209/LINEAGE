@@ -473,6 +473,44 @@ def test_verify_manifest_endpoint_accepts_asset_hash_wrapper() -> None:
     assert stage(body, "asset_match")["status"] == "attention"
 
 
+@pytest.mark.parametrize(
+    ("asset_hashes", "expected_detail"),
+    [
+        ("not-a-list", "assetHashes must be a list of SHA-256 hashes"),
+        ([VALID_HASH, 17], "assetHashes must contain only SHA-256 hash strings"),
+        (["not-a-sha256"], "assetHashes must contain 64-character SHA-256 hex digests"),
+        ([VALID_HASH] * 51, "assetHashes cannot contain more than 50 hashes"),
+    ],
+)
+def test_verify_manifest_endpoint_rejects_invalid_asset_hash_wrapper_before_verifier(
+    monkeypatch: pytest.MonkeyPatch,
+    asset_hashes: object,
+    expected_detail: str,
+) -> None:
+    verifier_called = False
+
+    def fake_verification_result(
+        _manifest: dict[str, Any],
+        asset_hashes: list[str] | None = None,
+    ) -> dict[str, Any]:
+        del asset_hashes
+        nonlocal verifier_called
+        verifier_called = True
+        return {"overall": {"status": "verified"}}
+
+    monkeypatch.setattr("lineage_api.main.verification_result", fake_verification_result)
+    client = TestClient(app)
+
+    response = client.post(
+        "/manifest/verify",
+        json={"manifest": signed_manifest(), "assetHashes": asset_hashes},
+    )
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": expected_detail}
+    assert verifier_called is False
+
+
 def test_verify_manifest_endpoint_rejects_oversized_payload_before_verifier(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
