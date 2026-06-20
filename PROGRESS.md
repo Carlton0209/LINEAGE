@@ -5,7 +5,7 @@ Last updated: 2026-06-20
 ## Baseline
 
 - Current branch: `codex/unified-verification-workspace` from `main` at
-  `d3c9f7d`, tracking not yet set.
+  `d3c9f7d`, tracking `origin/codex/unified-verification-workspace`.
 - Pre-existing untracked `outputs/` content is outside the security pass and remains
   untouched.
 - This file originated on `codex/deployment-readiness` and now tracks completed work
