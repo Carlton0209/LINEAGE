@@ -97,6 +97,17 @@ function appendIfPresent(params: URLSearchParams, key: string, value?: string) {
 }
 
 export async function fetchEvents(filters: EventFilters): Promise<EventFetchResult> {
+  return fetchEventsFromEndpoint(filters, `${apiBaseUrl()}/events`);
+}
+
+export async function fetchEventsFromRoute(filters: EventFilters): Promise<EventFetchResult> {
+  return fetchEventsFromEndpoint(filters, "/api/events");
+}
+
+async function fetchEventsFromEndpoint(
+  filters: EventFilters,
+  endpoint: string
+): Promise<EventFetchResult> {
   const params = new URLSearchParams();
   params.set("project_id", filters.project_id);
   appendIfPresent(params, "start_date", filters.start_date);
@@ -106,7 +117,7 @@ export async function fetchEvents(filters: EventFilters): Promise<EventFetchResu
   appendIfPresent(params, "asset_type", filters.asset_type);
 
   try {
-    const response = await fetch(`${apiBaseUrl()}/events?${params.toString()}`, {
+    const response = await fetch(`${endpoint}?${params.toString()}`, {
       cache: "no-store"
     });
 
@@ -203,9 +214,13 @@ export function verificationReportFromIssue(summary: string, detail: string): Ve
   };
 }
 
-export async function verifyManifest(rawJson: string): Promise<VerificationReport> {
+export async function verifyManifest(
+  rawJson: string,
+  assetHashes?: string[]
+): Promise<VerificationReport> {
+  let manifest: unknown;
   try {
-    JSON.parse(rawJson);
+    manifest = JSON.parse(rawJson);
   } catch {
     return verificationReportFromIssue(
       "Manifest could not be read as JSON.",
@@ -213,10 +228,11 @@ export async function verifyManifest(rawJson: string): Promise<VerificationRepor
     );
   }
 
+  const hasAssetHashes = Boolean(assetHashes?.length);
   const response = await fetch("/api/verify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: rawJson,
+    body: hasAssetHashes ? JSON.stringify({ manifest, assetHashes }) : rawJson,
     cache: "no-store"
   });
 

@@ -1,16 +1,47 @@
 # LINEAGE Progress
 
-Last updated: 2026-06-17
+Last updated: 2026-06-20
 
 ## Baseline
 
-- Current branch: `main` at `2236aa7`, tracking `origin/main`.
+- Current branch: `codex/unified-verification-workspace` from `main` at
+  `d3c9f7d`, tracking `origin/codex/unified-verification-workspace`.
 - Pre-existing untracked `outputs/` content is outside the security pass and remains
   untouched.
 - This file originated on `codex/deployment-readiness` and now tracks completed work
   carried into the mainline.
 
 ## Completed
+
+### Unified verification workspace
+
+- Goal: merge the separate Ledger, Verify, and Inspect surfaces into one
+  project-centric `/verify` workspace without changing backend endpoint contracts or
+  the six-stage `VerificationReport` shape.
+- Scope: Next.js `/verify` workspace, reusable verification report rendering,
+  reusable records table and filters, local file-hash matching section, client-side
+  event proxy, old-route redirects, simplified navigation, and production demo data
+  availability.
+- Acceptance: `/verify` supports State A project/manifest loading and State B
+  internal/external delivery views; `/verify?project=prj_demo_feature` loads a
+  signed manifest, staged report, ledger records, files section, and manifest
+  JSON/PDF export; `/ledger?project_id=...` redirects to `/verify?project=...`;
+  `/inspect` redirects to `/verify?mode=files`; delivered file bytes stay local and
+  only SHA-256 fingerprints are sent to lookup/verifier routes.
+- Result: `/verify` is now the unified verification workspace. The old Ledger table
+  and Inspect hashing behavior are recomposed into supporting Records and Files
+  sections, while the six-stage report remains the visual spine. Header navigation is
+  reduced to Home and Verify. Production demo data was seeded through the existing
+  `/events` endpoint so the live project picker and `prj_demo_feature` deep link load
+  real records.
+- Deployment: Vercel production deployment `dpl_GSapmqD25Bf2inAfzWbCXtwHiPFw` is
+  aliased at `https://lineage-puce.vercel.app`.
+- Validation: `corepack pnpm --filter @lineage/web build`,
+  `apps/api/.venv/bin/pytest apps/api/tests`, `corepack pnpm validate:schema`,
+  `git diff --check`, local dev HTTP checks, headless Chrome hydration check for
+  `/verify?project=prj_demo_feature`, production redirect checks, production
+  `/api/events?project_id=prj_demo_feature`, production manifest generation, and
+  production `/api/verify` staged-report roundtrip passed.
 
 ### Six-stage manifest verification and 0.2.0 production schema
 
